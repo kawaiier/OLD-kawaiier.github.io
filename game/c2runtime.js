@@ -30643,7 +30643,6 @@ cr.getObjectRefTable = function () {
 		cr.plugins_.Sprite.prototype.acts.SetAngle,
 		cr.system_object.prototype.exps.random,
 		cr.plugins_.Text.prototype.acts.SetVisible,
-		cr.plugins_.Audio.prototype.acts.Play,
 		cr.plugins_.Sprite.prototype.cnds.IsOutsideLayout,
 		cr.plugins_.Sprite.prototype.exps.X,
 		cr.plugins_.Sprite.prototype.exps.Y,
@@ -30652,7 +30651,12 @@ cr.getObjectRefTable = function () {
 		cr.system_object.prototype.cnds.Every,
 		cr.system_object.prototype.acts.CreateObject,
 		cr.system_object.prototype.exps.layoutwidth,
-		cr.system_object.prototype.exps.layoutheight
+		cr.system_object.prototype.exps.layoutheight,
+		cr.plugins_.Keyboard.prototype.cnds.OnKey,
+		cr.system_object.prototype.cnds.Compare,
+		cr.plugins_.Sprite.prototype.exps.Count,
+		cr.system_object.prototype.acts.SetVar,
+		cr.system_object.prototype.acts.GoToLayout
 	];
 };
 
