@@ -30648,6 +30648,7 @@ cr.getObjectRefTable = function () {
 		cr.plugins_.Sprite.prototype.exps.Y,
 		cr.plugins_.Sprite.prototype.cnds.CompareInstanceVar,
 		cr.system_object.prototype.acts.AddVar,
+		cr.plugins_.Sprite.prototype.acts.SetScale,
 		cr.system_object.prototype.cnds.Every,
 		cr.system_object.prototype.acts.CreateObject,
 		cr.system_object.prototype.exps.layoutwidth,
@@ -30656,7 +30657,9 @@ cr.getObjectRefTable = function () {
 		cr.system_object.prototype.cnds.Compare,
 		cr.plugins_.Sprite.prototype.exps.Count,
 		cr.system_object.prototype.acts.SetVar,
-		cr.system_object.prototype.acts.GoToLayout
+		cr.system_object.prototype.acts.GoToLayout,
+		cr.plugins_.Keyboard.prototype.cnds.IsKeyDown,
+		cr.behaviors.EightDir.prototype.acts.SimulateControl
 	];
 };
 
