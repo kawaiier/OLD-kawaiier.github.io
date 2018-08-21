@@ -3,39 +3,42 @@ html {
 }
 
 body {
+  background-image: url(assets/bckg.png);
+  background-size: cover;
   display: flex;
   flex-direction: column;
   min-height: 100%;
   font-family: 'Open Sans', serif;
 }
 
-#content {
-  background-color: #e3f2fd;
+.content {
+  background-color: rgba(227, 242, 253, 0.5);
   flex: 1;
   padding: 20px;
 }
 
-#footer {
+.footer {
   background-color: #f3e5f5;
   padding: 20px;
 }
 
 h1 {
-  font-size: 40px;
   color: rgb(25, 25, 112);
+  font-size: 40px;
 }
 
 p {
-  font-size: 20px;
+  font-size: 14pt;
 }
 
 .banner {
-  padding: 5px;
   margin: 20px;
+  padding: 5px;
 }
 
 .lead {
   margin: 10px;
+  font-size: 16pt;
 }
 
 .links {
