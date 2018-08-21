@@ -7,8 +7,8 @@ body {
   background-size: cover;
   display: flex;
   flex-direction: column;
-  min-height: 100%;
   font-family: 'Open Sans', serif;
+  min-height: 100%;
 }
 
 .content {
@@ -37,8 +37,8 @@ p {
 }
 
 .lead {
-  margin: 10px;
   font-size: 16pt;
+  margin: 10px;
 }
 
 .links {
