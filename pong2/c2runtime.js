@@ -23450,344 +23450,6 @@ cr.plugins_.Sprite = function(runtime)
 
 }());
 
-// Keyboard
-// ECMAScript 5 strict mode
-
-;
-;
-
-/////////////////////////////////////
-// Plugin class
-cr.plugins_.Keyboard = function(runtime)
-{
-	this.runtime = runtime;
-};
-
-(function ()
-{
-	var pluginProto = cr.plugins_.Keyboard.prototype;
-		
-	/////////////////////////////////////
-	// Object type class
-	pluginProto.Type = function(plugin)
-	{
-		this.plugin = plugin;
-		this.runtime = plugin.runtime;
-	};
-
-	var typeProto = pluginProto.Type.prototype;
-
-	typeProto.onCreate = function()
-	{
-	};
-
-	/////////////////////////////////////
-	// Instance class
-	pluginProto.Instance = function(type)
-	{
-		this.type = type;
-		this.runtime = type.runtime;
-		this.keyMap = new Array(256);		// stores key up/down state
-		this.typedKeyMap = new Array(256);	// stores the "key" value of an event relative to its keyCode, for TypedKey expression
-		this.usedKeys = new Array(256);
-		this.triggerKey = 0;
-	};
-	
-	var instanceProto = pluginProto.Instance.prototype;
-
-	instanceProto.onCreate = function()
-	{
-		var self = this;
-		
-		// Bind keyboard events
-		document.addEventListener("keydown", function (info)
-		{
-			self.onKeyDown(info);
-		});
-		
-		document.addEventListener("keyup", function (info)
-		{
-			self.onKeyUp(info);
-		});
-	};
-	
-	// On iframe embedded games like the Scirra Arcade, these keys can end up
-	// scrolling the parent page unless we specifically block them every time.
-	var keysToBlockWhenFramed = [32, 33, 34, 35, 36, 37, 38, 39, 40, 44];
-
-	instanceProto.onKeyDown = function (info)
-	{
-		var alreadyPreventedDefault = false;
-		
-		// Always block certain key presses in frames which can result in page scrolling.
-		if (window != window.top && keysToBlockWhenFramed.indexOf(info.which) > -1)
-		{
-			info.preventDefault();
-			alreadyPreventedDefault = true;
-			info.stopPropagation();
-		}
-		
-		// Key already down: ignore, must be a repeat
-		if (this.keyMap[info.which])
-		{
-			if (this.usedKeys[info.which] && !alreadyPreventedDefault)
-				info.preventDefault();
-			
-			return;
-		}
-		
-		var which = info.which;
-		// Set the key in the key map
-		this.typedKeyMap[which] = info["key"];
-		this.keyMap[which] = true;
-		this.triggerKey = which;
-		
-		this.runtime.isInUserInputEvent = true;
-		
-		// Trigger 'On Any Key'
-		this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnAnyKey, this);
-		
-		// Trigger 'On Key'
-		var eventRan = this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnKey, this);
-		
-		// Trigger 'On Key Code'
-		var eventRan2 = this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnKeyCode, this);
-		
-		this.runtime.isInUserInputEvent = false;
-		
-		// If any event ran, prevent the default behavior.  This does not include 'on any key' running though.
-		if (eventRan || eventRan2)
-		{
-			this.usedKeys[which] = true;
-			
-			if (!alreadyPreventedDefault)
-				info.preventDefault();
-		}
-	};
-
-	instanceProto.onKeyUp = function (info)
-	{
-		var which = info.which;
-		// Set the key in the key map
-		this.typedKeyMap[which] = info["key"];
-		this.keyMap[which] = false;
-		this.triggerKey = which;
-		
-		this.runtime.isInUserInputEvent = true;
-		
-		// Trigger 'On Any Key Released'
-		this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnAnyKeyReleased, this);
-		
-		// Trigger 'On Key Released'
-		var eventRan = this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnKeyReleased, this);
-		
-		// Trigger 'On Key Code Released'
-		var eventRan2 = this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnKeyCodeReleased, this);
-		
-		this.runtime.isInUserInputEvent = false;
-		
-		// If any event ran, prevent the default behavior
-		if (eventRan || eventRan2 || this.usedKeys[info.which])
-		{
-			this.usedKeys[which] = true;
-			info.preventDefault();
-		}
-	};
-	
-	instanceProto.onWindowBlur = function ()
-	{
-		// Fire "On key up" for any keys held down, to prevent stuck keys
-		var i;
-		for (i = 0; i < 256; ++i)
-		{
-			if (!this.keyMap[i])
-				continue;		// key already up
-			
-			// Synthesise a "key up" event to prevent apps getting stuck with keys down.
-			// Note this is not a real user input event, so we don't set isInUserInputEvent.
-			this.keyMap[i] = false;
-			this.triggerKey = i;
-			
-			// Trigger 'On Any Key Released'
-			this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnAnyKeyReleased, this);
-			
-			// Trigger 'On Key Released'
-			var eventRan = this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnKeyReleased, this);
-			
-			// Trigger 'On Key Code Released'
-			var eventRan2 = this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnKeyCodeReleased, this);
-			
-			// If any event ran, prevent the default behavior
-			if (eventRan || eventRan2)
-				this.usedKeys[i] = true;
-		}
-	};
-	
-	instanceProto.saveToJSON = function ()
-	{
-		return { "triggerKey": this.triggerKey };
-	};
-	
-	instanceProto.loadFromJSON = function (o)
-	{
-		this.triggerKey = o["triggerKey"];
-	};
-	
-
-	//////////////////////////////////////
-	// Conditions
-	function Cnds() {};
-
-	Cnds.prototype.IsKeyDown = function(key)
-	{
-		return this.keyMap[key];
-	};
-	
-	Cnds.prototype.OnKey = function(key)
-	{
-		return (key === this.triggerKey);
-	};
-	
-	Cnds.prototype.OnAnyKey = function(key)
-	{
-		return true;
-	};
-	
-	Cnds.prototype.OnAnyKeyReleased = function(key)
-	{
-		return true;
-	};
-	
-	Cnds.prototype.OnKeyReleased = function(key)
-	{
-		return (key === this.triggerKey);
-	};
-	
-	Cnds.prototype.IsKeyCodeDown = function(key)
-	{
-		key = Math.floor(key);
-		
-		if (key < 0 || key >= this.keyMap.length)
-			return false;
-		
-		return this.keyMap[key];
-	};
-	
-	Cnds.prototype.OnKeyCode = function(key)
-	{
-		return (key === this.triggerKey);
-	};
-	
-	Cnds.prototype.OnKeyCodeReleased = function(key)
-	{
-		return (key === this.triggerKey);
-	};
-	
-	pluginProto.cnds = new Cnds();
-	
-	//////////////////////////////////////
-	// Actions
-	function Acts() {};
-	
-	pluginProto.acts = new Acts();
-	
-	//////////////////////////////////////
-	// Expressions
-	function Exps() {};
-	
-	Exps.prototype.TypedKey = function (ret)
-	{
-		ret.set_string(this.typedKeyMap[this.triggerKey] || "");
-	};
-	
-	Exps.prototype.LastKeyCode = function (ret)
-	{
-		ret.set_int(this.triggerKey);
-	};
-	
-	// Turns out Javascript's fromCharCode is nearly totally useless. Fix it with our own function.
-	function fixedStringFromCharCode(kc)
-	{
-		kc = Math.floor(kc);
-		
-		// Alphanumerics work with fromCharCode, so just special case every other key
-		switch (kc) {
-		case 8:		return "backspace";
-		case 9:		return "tab";
-		case 13:	return "enter";
-		case 16:	return "shift";
-		case 17:	return "control";
-		case 18:	return "alt";
-		case 19:	return "pause";
-		case 20:	return "capslock";
-		case 27:	return "esc";
-		case 33:	return "pageup";
-		case 34:	return "pagedown";
-		case 35:	return "end";
-		case 36:	return "home";
-		case 37:	return "←";
-		case 38:	return "↑";
-		case 39:	return "→";
-		case 40:	return "↓";
-		case 45:	return "insert";
-		case 46:	return "del";
-		case 91:	return "left window key";
-		case 92:	return "right window key";
-		case 93:	return "select";
-		case 96:	return "numpad 0";
-		case 97:	return "numpad 1";
-		case 98:	return "numpad 2";
-		case 99:	return "numpad 3";
-		case 100:	return "numpad 4";
-		case 101:	return "numpad 5";
-		case 102:	return "numpad 6";
-		case 103:	return "numpad 7";
-		case 104:	return "numpad 8";
-		case 105:	return "numpad 9";
-		case 106:	return "numpad *";
-		case 107:	return "numpad +";
-		case 109:	return "numpad -";
-		case 110:	return "numpad .";
-		case 111:	return "numpad /";
-		case 112:	return "F1";
-		case 113:	return "F2";
-		case 114:	return "F3";
-		case 115:	return "F4";
-		case 116:	return "F5";
-		case 117:	return "F6";
-		case 118:	return "F7";
-		case 119:	return "F8";
-		case 120:	return "F9";
-		case 121:	return "F10";
-		case 122:	return "F11";
-		case 123:	return "F12";
-		case 144:	return "numlock";
-		case 145:	return "scroll lock";
-		case 186:	return ";";
-		case 187:	return "=";
-		case 188:	return ",";
-		case 189:	return "-";
-		case 190:	return ".";
-		case 191:	return "/";
-		case 192:	return "'";
-		case 219:	return "[";
-		case 220:	return "\\";
-		case 221:	return "]";
-		case 222:	return "#";
-		case 223:	return "`";
-		default:	return String.fromCharCode(kc);
-		}
-	};
-	
-	Exps.prototype.StringFromKeyCode = function (ret, kc)
-	{
-		ret.set_string(fixedStringFromCharCode(kc));
-	};
-	
-	pluginProto.exps = new Exps();
-
-}());
-
 // Text
 // ECMAScript 5 strict mode
 
@@ -24924,6 +24586,725 @@ cr.plugins_.TiledBg = function(runtime)
 	Exps.prototype.ImageHeight = function (ret)
 	{
 		ret.set_float(this.texture_img.height);
+	};
+	
+	pluginProto.exps = new Exps();
+
+}());
+
+// Button
+// ECMAScript 5 strict mode
+
+;
+;
+
+/////////////////////////////////////
+// Plugin class
+cr.plugins_.Button = function(runtime)
+{
+	this.runtime = runtime;
+};
+
+(function ()
+{
+	/////////////////////////////////////
+	var pluginProto = cr.plugins_.Button.prototype;
+		
+	/////////////////////////////////////
+	// Object type class
+	pluginProto.Type = function(plugin)
+	{
+		this.plugin = plugin;
+		this.runtime = plugin.runtime;
+	};
+
+	var typeProto = pluginProto.Type.prototype;
+
+	// called on startup for each object type
+	typeProto.onCreate = function()
+	{
+	};
+
+	/////////////////////////////////////
+	// Instance class
+	pluginProto.Instance = function(type)
+	{
+		this.type = type;
+		this.runtime = type.runtime;
+	};
+	
+	var instanceProto = pluginProto.Instance.prototype;
+
+	// called whenever an instance is created
+	instanceProto.onCreate = function()
+	{
+		this.isCheckbox = (this.properties[0] === 1);
+		
+		this.inputElem = document.createElement("input");
+		
+		if (this.isCheckbox)
+			this.elem = document.createElement("label");
+		else
+			this.elem = this.inputElem;
+			
+		this.labelText = null;
+		
+		this.inputElem.type = (this.isCheckbox ? "checkbox" : "button");
+		this.inputElem.id = this.properties[7];
+		document.body.appendChild(this.elem);
+		
+		if (this.isCheckbox)
+		{
+			this.elem.appendChild(this.inputElem);
+			this.labelText = document.createTextNode(this.properties[1]);
+			this.elem.appendChild(this.labelText);
+			
+			this.inputElem.checked = this.properties[6];
+			
+			// Avoid yucky serif font for checkbox labels
+			this.elem.style.fontFamily = "sans-serif";
+			
+			// Allow setting width and height on label
+			this.elem.style.display = "inline-block";
+			this.elem.style.color = "black";
+		}
+		else
+			this.inputElem.value = this.properties[1];
+		
+		this.elem.title = this.properties[2];
+		this.inputElem.disabled = !this.properties[4];
+		
+		this.autoFontSize = this.properties[5];
+		this.element_hidden = false;
+		
+		if (!this.properties[3])		// initially invisible
+		{
+			this.elem.style.display = "none";
+			this.visible = false;
+			this.element_hidden = true;
+		}
+		
+		this.inputElem.onclick = (function (self) {
+			return function(e) {
+				e.stopPropagation();
+				
+				self.runtime.isInUserInputEvent = true;
+				self.runtime.trigger(cr.plugins_.Button.prototype.cnds.OnClicked, self);
+				self.runtime.isInUserInputEvent = false;
+			};
+		})(this);
+		
+		// Prevent touches reaching the canvas
+		this.elem.addEventListener("touchstart", function (e) {
+			e.stopPropagation();
+		}, false);
+		
+		this.elem.addEventListener("touchmove", function (e) {
+			e.stopPropagation();
+		}, false);
+		
+		this.elem.addEventListener("touchend", function (e) {
+			e.stopPropagation();
+		}, false);
+		
+		// Prevent clicks being blocked
+		this.elem.addEventListener("mousedown", function (e) {
+			e.stopPropagation();
+		});
+		
+		this.elem.addEventListener("mouseup", function (e) {
+			e.stopPropagation();
+		});
+		
+		// Prevent key presses being blocked by the Keyboard object
+		this.elem.addEventListener("keydown", function (e) {
+			e.stopPropagation();
+		});
+		
+		this.elem.addEventListener("keyup", function (e) {
+			e.stopPropagation();
+		});
+		
+		this.lastLeft = 0;
+		this.lastTop = 0;
+		this.lastRight = 0;
+		this.lastBottom = 0;
+		this.lastWinWidth = 0;
+		this.lastWinHeight = 0;
+			
+		this.updatePosition(true);
+		
+		this.runtime.tickMe(this);
+	};
+	
+	instanceProto.saveToJSON = function ()
+	{
+		var o = {
+			"tooltip": this.elem.title,
+			"disabled": !!this.inputElem.disabled
+		};
+			
+		if (this.isCheckbox)
+		{
+			o["checked"] = !!this.inputElem.checked;
+			o["text"] = this.labelText.nodeValue;
+		}
+		else
+		{
+			o["text"] = this.elem.value;
+		}
+		
+		return o;
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+		this.elem.title = o["tooltip"];
+		this.inputElem.disabled = o["disabled"];
+		
+		if (this.isCheckbox)
+		{
+			this.inputElem.checked = o["checked"];
+			this.labelText.nodeValue = o["text"];
+		}
+		else
+		{
+			this.elem.value = o["text"];
+		}
+	};
+	
+	instanceProto.onDestroy = function ()
+	{
+		this.elem.parentElement.removeChild(this.elem);
+		this.elem = null;
+	};
+	
+	instanceProto.tick = function ()
+	{
+		this.updatePosition();
+	};
+	
+	var last_canvas_offset = null;
+	var last_checked_tick = -1;
+	
+	instanceProto.updatePosition = function (first)
+	{
+		var left = this.layer.layerToCanvas(this.x, this.y, true);
+		var top = this.layer.layerToCanvas(this.x, this.y, false);
+		var right = this.layer.layerToCanvas(this.x + this.width, this.y + this.height, true);
+		var bottom = this.layer.layerToCanvas(this.x + this.width, this.y + this.height, false);
+		
+		var rightEdge = this.runtime.width / this.runtime.devicePixelRatio;
+		var bottomEdge = this.runtime.height / this.runtime.devicePixelRatio;
+		
+		// Is entirely offscreen or invisible: hide
+		if (!this.visible || !this.layer.visible || right <= 0 || bottom <= 0 || left >= rightEdge || top >= bottomEdge)
+		{
+			if (!this.element_hidden)
+				this.elem.style.display = "none";
+			
+			this.element_hidden = true;
+			return;
+		}
+		
+		// Truncate to canvas size
+		if (left < 1)
+			left = 1;
+		if (top < 1)
+			top = 1;
+		if (right >= rightEdge)
+			right = rightEdge - 1;
+		if (bottom >= bottomEdge)
+			bottom = bottomEdge - 1;
+		
+		var curWinWidth = window.innerWidth;
+		var curWinHeight = window.innerHeight;
+			
+		// Avoid redundant updates
+		if (!first && this.lastLeft === left && this.lastTop === top && this.lastRight === right && this.lastBottom === bottom && this.lastWinWidth === curWinWidth && this.lastWinHeight === curWinHeight)
+		{
+			if (this.element_hidden)
+			{
+				this.elem.style.display = "";
+				this.element_hidden = false;
+			}
+			
+			return;
+		}
+			
+		this.lastLeft = left;
+		this.lastTop = top;
+		this.lastRight = right;
+		this.lastBottom = bottom;
+		this.lastWinWidth = curWinWidth;
+		this.lastWinHeight = curWinHeight;
+		
+		if (this.element_hidden)
+		{
+			this.elem.style.display = "";
+			this.element_hidden = false;
+		}
+		
+		var offx = Math.round(left) + this.runtime.canvas.offsetLeft;
+		var offy = Math.round(top) + this.runtime.canvas.offsetTop;
+		this.elem.style.position = "absolute";
+		this.elem.style.left = offx + "px";
+		this.elem.style.top = offy + "px";
+		this.elem.style.width = Math.round(right - left) + "px";
+		this.elem.style.height = Math.round(bottom - top) + "px";
+		
+		if (this.autoFontSize)
+			this.elem.style.fontSize = ((this.layer.getScale(true) / this.runtime.devicePixelRatio) - 0.2) + "em";
+	};
+	
+	// only called if a layout object
+	instanceProto.draw = function(ctx)
+	{
+	};
+	
+	instanceProto.drawGL = function(glw)
+	{
+	};
+	
+
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+	
+	Cnds.prototype.OnClicked = function ()
+	{
+		return true;
+	};
+	
+	Cnds.prototype.IsChecked = function ()
+	{
+		return this.isCheckbox && this.inputElem.checked;
+	};
+	
+	Cnds.prototype.CompareText = function(text_to_compare, case_sensitive)
+	{
+		var text;
+		if (this.isCheckbox)
+			text = this.labelText.nodeValue;
+		else
+			text = this.elem.value;
+			
+		if (case_sensitive)
+			return text == text_to_compare;
+		else
+			return cr.equals_nocase(text, text_to_compare);
+	};
+	
+	pluginProto.cnds = new Cnds();
+	
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+
+	Acts.prototype.SetText = function (text)
+	{
+		if (this.isCheckbox)
+			this.labelText.nodeValue = text;
+		else
+			this.elem.value = text;
+	};
+	
+	Acts.prototype.SetTooltip = function (text)
+	{
+		this.elem.title = text;
+	};
+	
+	Acts.prototype.SetVisible = function (vis)
+	{
+		this.visible = (vis !== 0);
+	};
+	
+	Acts.prototype.SetEnabled = function (en)
+	{
+		this.inputElem.disabled = (en === 0);
+	};
+	
+	Acts.prototype.SetFocus = function ()
+	{
+		this.inputElem.focus();
+	};
+	
+	Acts.prototype.SetBlur = function ()
+	{
+		this.inputElem.blur();
+	};
+	
+	Acts.prototype.SetCSSStyle = function (p, v)
+	{
+		this.elem.style[cr.cssToCamelCase(p)] = v;
+	};
+	
+	Acts.prototype.SetChecked = function (c)
+	{
+		if (!this.isCheckbox)
+			return;
+			
+		this.inputElem.checked = (c === 1);
+	};
+	
+	Acts.prototype.ToggleChecked = function ()
+	{
+		if (!this.isCheckbox)
+			return;
+			
+		this.inputElem.checked = !this.inputElem.checked;
+	};
+	
+	pluginProto.acts = new Acts();
+	
+	//////////////////////////////////////
+	// Expressions
+	function Exps() {};
+	
+	Exps.prototype.Text = function (ret)
+	{
+		if (this.isCheckbox)
+			ret.set_string(this.labelText.nodeValue);
+		else
+			ret.set_string(this.elem.value);
+	}
+	
+	pluginProto.exps = new Exps();
+
+}());
+
+// Keyboard
+// ECMAScript 5 strict mode
+
+;
+;
+
+/////////////////////////////////////
+// Plugin class
+cr.plugins_.Keyboard = function(runtime)
+{
+	this.runtime = runtime;
+};
+
+(function ()
+{
+	var pluginProto = cr.plugins_.Keyboard.prototype;
+		
+	/////////////////////////////////////
+	// Object type class
+	pluginProto.Type = function(plugin)
+	{
+		this.plugin = plugin;
+		this.runtime = plugin.runtime;
+	};
+
+	var typeProto = pluginProto.Type.prototype;
+
+	typeProto.onCreate = function()
+	{
+	};
+
+	/////////////////////////////////////
+	// Instance class
+	pluginProto.Instance = function(type)
+	{
+		this.type = type;
+		this.runtime = type.runtime;
+		this.keyMap = new Array(256);		// stores key up/down state
+		this.typedKeyMap = new Array(256);	// stores the "key" value of an event relative to its keyCode, for TypedKey expression
+		this.usedKeys = new Array(256);
+		this.triggerKey = 0;
+	};
+	
+	var instanceProto = pluginProto.Instance.prototype;
+
+	instanceProto.onCreate = function()
+	{
+		var self = this;
+		
+		// Bind keyboard events
+		document.addEventListener("keydown", function (info)
+		{
+			self.onKeyDown(info);
+		});
+		
+		document.addEventListener("keyup", function (info)
+		{
+			self.onKeyUp(info);
+		});
+	};
+	
+	// On iframe embedded games like the Scirra Arcade, these keys can end up
+	// scrolling the parent page unless we specifically block them every time.
+	var keysToBlockWhenFramed = [32, 33, 34, 35, 36, 37, 38, 39, 40, 44];
+
+	instanceProto.onKeyDown = function (info)
+	{
+		var alreadyPreventedDefault = false;
+		
+		// Always block certain key presses in frames which can result in page scrolling.
+		if (window != window.top && keysToBlockWhenFramed.indexOf(info.which) > -1)
+		{
+			info.preventDefault();
+			alreadyPreventedDefault = true;
+			info.stopPropagation();
+		}
+		
+		// Key already down: ignore, must be a repeat
+		if (this.keyMap[info.which])
+		{
+			if (this.usedKeys[info.which] && !alreadyPreventedDefault)
+				info.preventDefault();
+			
+			return;
+		}
+		
+		var which = info.which;
+		// Set the key in the key map
+		this.typedKeyMap[which] = info["key"];
+		this.keyMap[which] = true;
+		this.triggerKey = which;
+		
+		this.runtime.isInUserInputEvent = true;
+		
+		// Trigger 'On Any Key'
+		this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnAnyKey, this);
+		
+		// Trigger 'On Key'
+		var eventRan = this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnKey, this);
+		
+		// Trigger 'On Key Code'
+		var eventRan2 = this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnKeyCode, this);
+		
+		this.runtime.isInUserInputEvent = false;
+		
+		// If any event ran, prevent the default behavior.  This does not include 'on any key' running though.
+		if (eventRan || eventRan2)
+		{
+			this.usedKeys[which] = true;
+			
+			if (!alreadyPreventedDefault)
+				info.preventDefault();
+		}
+	};
+
+	instanceProto.onKeyUp = function (info)
+	{
+		var which = info.which;
+		// Set the key in the key map
+		this.typedKeyMap[which] = info["key"];
+		this.keyMap[which] = false;
+		this.triggerKey = which;
+		
+		this.runtime.isInUserInputEvent = true;
+		
+		// Trigger 'On Any Key Released'
+		this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnAnyKeyReleased, this);
+		
+		// Trigger 'On Key Released'
+		var eventRan = this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnKeyReleased, this);
+		
+		// Trigger 'On Key Code Released'
+		var eventRan2 = this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnKeyCodeReleased, this);
+		
+		this.runtime.isInUserInputEvent = false;
+		
+		// If any event ran, prevent the default behavior
+		if (eventRan || eventRan2 || this.usedKeys[info.which])
+		{
+			this.usedKeys[which] = true;
+			info.preventDefault();
+		}
+	};
+	
+	instanceProto.onWindowBlur = function ()
+	{
+		// Fire "On key up" for any keys held down, to prevent stuck keys
+		var i;
+		for (i = 0; i < 256; ++i)
+		{
+			if (!this.keyMap[i])
+				continue;		// key already up
+			
+			// Synthesise a "key up" event to prevent apps getting stuck with keys down.
+			// Note this is not a real user input event, so we don't set isInUserInputEvent.
+			this.keyMap[i] = false;
+			this.triggerKey = i;
+			
+			// Trigger 'On Any Key Released'
+			this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnAnyKeyReleased, this);
+			
+			// Trigger 'On Key Released'
+			var eventRan = this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnKeyReleased, this);
+			
+			// Trigger 'On Key Code Released'
+			var eventRan2 = this.runtime.trigger(cr.plugins_.Keyboard.prototype.cnds.OnKeyCodeReleased, this);
+			
+			// If any event ran, prevent the default behavior
+			if (eventRan || eventRan2)
+				this.usedKeys[i] = true;
+		}
+	};
+	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "triggerKey": this.triggerKey };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+		this.triggerKey = o["triggerKey"];
+	};
+	
+
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+
+	Cnds.prototype.IsKeyDown = function(key)
+	{
+		return this.keyMap[key];
+	};
+	
+	Cnds.prototype.OnKey = function(key)
+	{
+		return (key === this.triggerKey);
+	};
+	
+	Cnds.prototype.OnAnyKey = function(key)
+	{
+		return true;
+	};
+	
+	Cnds.prototype.OnAnyKeyReleased = function(key)
+	{
+		return true;
+	};
+	
+	Cnds.prototype.OnKeyReleased = function(key)
+	{
+		return (key === this.triggerKey);
+	};
+	
+	Cnds.prototype.IsKeyCodeDown = function(key)
+	{
+		key = Math.floor(key);
+		
+		if (key < 0 || key >= this.keyMap.length)
+			return false;
+		
+		return this.keyMap[key];
+	};
+	
+	Cnds.prototype.OnKeyCode = function(key)
+	{
+		return (key === this.triggerKey);
+	};
+	
+	Cnds.prototype.OnKeyCodeReleased = function(key)
+	{
+		return (key === this.triggerKey);
+	};
+	
+	pluginProto.cnds = new Cnds();
+	
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+	
+	pluginProto.acts = new Acts();
+	
+	//////////////////////////////////////
+	// Expressions
+	function Exps() {};
+	
+	Exps.prototype.TypedKey = function (ret)
+	{
+		ret.set_string(this.typedKeyMap[this.triggerKey] || "");
+	};
+	
+	Exps.prototype.LastKeyCode = function (ret)
+	{
+		ret.set_int(this.triggerKey);
+	};
+	
+	// Turns out Javascript's fromCharCode is nearly totally useless. Fix it with our own function.
+	function fixedStringFromCharCode(kc)
+	{
+		kc = Math.floor(kc);
+		
+		// Alphanumerics work with fromCharCode, so just special case every other key
+		switch (kc) {
+		case 8:		return "backspace";
+		case 9:		return "tab";
+		case 13:	return "enter";
+		case 16:	return "shift";
+		case 17:	return "control";
+		case 18:	return "alt";
+		case 19:	return "pause";
+		case 20:	return "capslock";
+		case 27:	return "esc";
+		case 33:	return "pageup";
+		case 34:	return "pagedown";
+		case 35:	return "end";
+		case 36:	return "home";
+		case 37:	return "←";
+		case 38:	return "↑";
+		case 39:	return "→";
+		case 40:	return "↓";
+		case 45:	return "insert";
+		case 46:	return "del";
+		case 91:	return "left window key";
+		case 92:	return "right window key";
+		case 93:	return "select";
+		case 96:	return "numpad 0";
+		case 97:	return "numpad 1";
+		case 98:	return "numpad 2";
+		case 99:	return "numpad 3";
+		case 100:	return "numpad 4";
+		case 101:	return "numpad 5";
+		case 102:	return "numpad 6";
+		case 103:	return "numpad 7";
+		case 104:	return "numpad 8";
+		case 105:	return "numpad 9";
+		case 106:	return "numpad *";
+		case 107:	return "numpad +";
+		case 109:	return "numpad -";
+		case 110:	return "numpad .";
+		case 111:	return "numpad /";
+		case 112:	return "F1";
+		case 113:	return "F2";
+		case 114:	return "F3";
+		case 115:	return "F4";
+		case 116:	return "F5";
+		case 117:	return "F6";
+		case 118:	return "F7";
+		case 119:	return "F8";
+		case 120:	return "F9";
+		case 121:	return "F10";
+		case 122:	return "F11";
+		case 123:	return "F12";
+		case 144:	return "numlock";
+		case 145:	return "scroll lock";
+		case 186:	return ";";
+		case 187:	return "=";
+		case 188:	return ",";
+		case 189:	return "-";
+		case 190:	return ".";
+		case 191:	return "/";
+		case 192:	return "'";
+		case 219:	return "[";
+		case 220:	return "\\";
+		case 221:	return "]";
+		case 222:	return "#";
+		case 223:	return "`";
+		default:	return String.fromCharCode(kc);
+		}
+	};
+	
+	Exps.prototype.StringFromKeyCode = function (ret, kc)
+	{
+		ret.set_string(fixedStringFromCharCode(kc));
 	};
 	
 	pluginProto.exps = new Exps();
@@ -28880,80 +29261,6 @@ cr.plugins_.Audio = function(runtime)
 
 }());
 
-// Solid
-// ECMAScript 5 strict mode
-
-;
-;
-
-/////////////////////////////////////
-// Behavior class
-cr.behaviors.solid = function(runtime)
-{
-	this.runtime = runtime;
-};
-
-(function ()
-{
-	var behaviorProto = cr.behaviors.solid.prototype;
-		
-	/////////////////////////////////////
-	// Behavior type class
-	behaviorProto.Type = function(behavior, objtype)
-	{
-		this.behavior = behavior;
-		this.objtype = objtype;
-		this.runtime = behavior.runtime;
-	};
-
-	var behtypeProto = behaviorProto.Type.prototype;
-
-	behtypeProto.onCreate = function()
-	{
-	};
-
-	/////////////////////////////////////
-	// Behavior instance class
-	behaviorProto.Instance = function(type, inst)
-	{
-		this.type = type;
-		this.behavior = type.behavior;
-		this.inst = inst;				// associated object instance to modify
-		this.runtime = type.runtime;
-	};
-	
-	var behinstProto = behaviorProto.Instance.prototype;
-
-	behinstProto.onCreate = function()
-	{
-		this.inst.extra["solidEnabled"] = this.properties[0];
-	};
-
-	behinstProto.tick = function ()
-	{
-	};
-	
-	
-	function Cnds() {};
-	
-	Cnds.prototype.IsEnabled = function ()
-	{
-		return this.inst.extra["solidEnabled"];
-	};
-	
-	behaviorProto.cnds = new Cnds();
-	
-	function Acts() {};
-	
-	Acts.prototype.SetEnabled = function (e)
-	{
-		this.inst.extra["solidEnabled"] = !!e;
-	};
-	
-	behaviorProto.acts = new Acts();
-	
-}());
-
 // Bullet
 // ECMAScript 5 strict mode
 
@@ -29238,6 +29545,11 @@ cr.behaviors.Bullet = function(runtime)
 		return true;
 	};
 	
+	Cnds.prototype.IsEnabled = function ()
+	{
+		return this.enabled;
+	};
+	
 	behaviorProto.cnds = new Cnds();
 
 	//////////////////////////////////////
@@ -29368,24 +29680,977 @@ cr.behaviors.Bullet = function(runtime)
 	
 }());
 
+// Solid
+// ECMAScript 5 strict mode
+
+;
+;
+
+/////////////////////////////////////
+// Behavior class
+cr.behaviors.solid = function(runtime)
+{
+	this.runtime = runtime;
+};
+
+(function ()
+{
+	var behaviorProto = cr.behaviors.solid.prototype;
+		
+	/////////////////////////////////////
+	// Behavior type class
+	behaviorProto.Type = function(behavior, objtype)
+	{
+		this.behavior = behavior;
+		this.objtype = objtype;
+		this.runtime = behavior.runtime;
+	};
+
+	var behtypeProto = behaviorProto.Type.prototype;
+
+	behtypeProto.onCreate = function()
+	{
+	};
+
+	/////////////////////////////////////
+	// Behavior instance class
+	behaviorProto.Instance = function(type, inst)
+	{
+		this.type = type;
+		this.behavior = type.behavior;
+		this.inst = inst;				// associated object instance to modify
+		this.runtime = type.runtime;
+	};
+	
+	var behinstProto = behaviorProto.Instance.prototype;
+
+	behinstProto.onCreate = function()
+	{
+		this.inst.extra["solidEnabled"] = this.properties[0];
+	};
+
+	behinstProto.tick = function ()
+	{
+	};
+	
+	
+	function Cnds() {};
+	
+	Cnds.prototype.IsEnabled = function ()
+	{
+		return this.inst.extra["solidEnabled"];
+	};
+	
+	behaviorProto.cnds = new Cnds();
+	
+	function Acts() {};
+	
+	Acts.prototype.SetEnabled = function (e)
+	{
+		this.inst.extra["solidEnabled"] = !!e;
+	};
+	
+	behaviorProto.acts = new Acts();
+	
+}());
+
+// Drag & Drop
+// ECMAScript 5 strict mode
+
+;
+;
+
+/////////////////////////////////////
+// Behavior class
+cr.behaviors.DragnDrop = function(runtime)
+{
+	this.runtime = runtime;
+	var self = this;
+	
+	document.addEventListener("mousemove", function(info) {
+		self.onMouseMove(info);
+	});
+		
+	document.addEventListener("mousedown", function(info) {
+		self.onMouseDown(info);
+	});
+	
+	document.addEventListener("mouseup", function(info) {
+		self.onMouseUp(info);
+	});
+	
+	// Use document touch input for fullscreen mode
+	var elem = (this.runtime.fullscreen_mode > 0) ? document : this.runtime.canvas;
+	
+	if (typeof PointerEvent !== "undefined")
+	{
+		elem.addEventListener("pointerdown",
+			function(info) {
+				self.onPointerStart(info);
+			},
+			false
+		);
+		
+		elem.addEventListener("pointermove",
+			function(info) {
+				self.onPointerMove(info);
+			},
+			false
+		);
+		
+		elem.addEventListener("pointerup",
+			function(info) {
+				self.onPointerEnd(info);
+			},
+			false
+		);
+		
+		// Treat pointer cancellation the same as a touch end
+		elem.addEventListener("pointercancel",
+			function(info) {
+				self.onPointerEnd(info);
+			},
+			false
+		);
+	}
+	else if (window.navigator["msPointerEnabled"])
+	{
+		elem.addEventListener("MSPointerDown",
+			function(info) {
+				self.onPointerStart(info);
+			},
+			false
+		);
+		
+		elem.addEventListener("MSPointerMove",
+			function(info) {
+				self.onPointerMove(info);
+			},
+			false
+		);
+		
+		elem.addEventListener("MSPointerUp",
+			function(info) {
+				self.onPointerEnd(info);
+			},
+			false
+		);
+		
+		// Treat pointer cancellation the same as a touch end
+		elem.addEventListener("MSPointerCancel",
+			function(info) {
+				self.onPointerEnd(info);
+			},
+			false
+		);
+	}
+	else
+	{
+		elem.addEventListener("touchstart",
+			function(info) {
+				self.onTouchStart(info);
+			},
+			false
+		);
+		
+		elem.addEventListener("touchmove",
+			function(info) {
+				self.onTouchMove(info);
+			},
+			false
+		);
+		
+		elem.addEventListener("touchend",
+			function(info) {
+				self.onTouchEnd(info);
+			},
+			false
+		);
+		
+		elem.addEventListener("touchcancel",
+			function(info) {
+				self.onTouchEnd(info);
+			},
+			false
+		);
+	}
+};
+
+(function ()
+{
+	var behaviorProto = cr.behaviors.DragnDrop.prototype;
+	
+	var dummyoffset = {left: 0, top: 0};
+	
+	function GetDragDropBehavior(inst)
+	{
+		var i, len;
+		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
+		{
+			if (inst.behavior_insts[i] instanceof behaviorProto.Instance)
+				return inst.behavior_insts[i];
+		}
+		
+		return null;
+	};
+	
+	behaviorProto.onMouseDown = function (info)
+	{
+		if (info.which !== 1)
+			return;		// not left mouse button
+			
+		this.onInputDown("leftmouse", info.pageX, info.pageY);
+	};
+	
+	behaviorProto.onMouseMove = function (info)
+	{
+		if (info.which !== 1)
+			return;		// not left mouse button
+			
+		this.onInputMove("leftmouse", info.pageX, info.pageY);
+	};
+	
+	behaviorProto.onMouseUp = function (info)
+	{
+		if (info.which !== 1)
+			return;		// not left mouse button
+			
+		this.onInputUp("leftmouse");
+	};
+	
+	behaviorProto.onTouchStart = function (info)
+	{
+		if (info.preventDefault && cr.isCanvasInputEvent(info))
+			info.preventDefault();
+		
+		var i, len, t, id;
+		for (i = 0, len = info.changedTouches.length; i < len; i++)
+		{
+			t = info.changedTouches[i];
+			
+			id = t.identifier;
+			this.onInputDown(id ? id.toString() : "<none>", t.pageX, t.pageY);
+		}
+	};
+	
+	behaviorProto.onTouchMove = function (info)
+	{
+		if (info.preventDefault)
+			info.preventDefault();
+		
+		var i, len, t, id;
+		for (i = 0, len = info.changedTouches.length; i < len; i++)
+		{
+			t = info.changedTouches[i];
+			id = t.identifier;
+			this.onInputMove(id ? id.toString() : "<none>", t.pageX, t.pageY);
+		}
+	};
+	
+	behaviorProto.onTouchEnd = function (info)
+	{
+		if (info.preventDefault && cr.isCanvasInputEvent(info))
+			info.preventDefault();
+		
+		var i, len, t, id;
+		for (i = 0, len = info.changedTouches.length; i < len; i++)
+		{
+			t = info.changedTouches[i];
+			id = t.identifier;
+			this.onInputUp(id ? id.toString() : "<none>");
+		}
+	};
+	
+	behaviorProto.onPointerStart = function (info)
+	{
+		// Ignore mouse events
+		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
+			return;
+			
+		if (info.preventDefault && cr.isCanvasInputEvent(info))
+			info.preventDefault();
+		
+		this.onInputDown(info["pointerId"].toString(), info.pageX, info.pageY);
+	};
+	
+	behaviorProto.onPointerMove = function (info)
+	{
+		// Ignore mouse events
+		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
+			return;
+			
+		if (info.preventDefault)
+			info.preventDefault();
+		
+		this.onInputMove(info["pointerId"].toString(), info.pageX, info.pageY);
+	};
+	
+	behaviorProto.onPointerEnd = function (info)
+	{
+		// Ignore mouse events
+		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
+			return;
+			
+		if (info.preventDefault && cr.isCanvasInputEvent(info))
+			info.preventDefault();
+		
+		this.onInputUp(info["pointerId"].toString());
+	};
+	
+	behaviorProto.onInputDown = function (src, pageX, pageY)
+	{
+		var offsetLeft = this.runtime.canvas.offsetLeft;
+		var offsetTop = this.runtime.canvas.offsetTop;
+		var x = pageX - offsetLeft;
+		var y = pageY - offsetTop;
+		var lx, ly, topx, topy;
+		
+		var arr = this.my_instances.valuesRef();
+		
+		var i, len, b, inst, topmost = null;
+		for (i = 0, len = arr.length; i < len; i++)
+		{
+			inst = arr[i];
+			b = GetDragDropBehavior(inst);
+			
+			if (!b.enabled || b.dragging)
+				continue;		// don't consider disabled or already-dragging instances
+				
+			lx = inst.layer.canvasToLayer(x, y, true);
+			ly = inst.layer.canvasToLayer(x, y, false);
+			inst.update_bbox();
+			if (!inst.contains_pt(lx, ly))
+				continue;		// don't consider instances not over this point
+				
+			// First instance found
+			if (!topmost)
+			{
+				topmost = inst;
+				topx = lx;
+				topy = ly;
+				continue;
+			}
+			
+			// Otherwise prefer the topmost instance of all overlapping the point
+			if (inst.layer.index > topmost.layer.index)
+			{
+				topmost = inst;
+				topx = lx;
+				topy = ly;
+				continue;
+			}
+			
+			if (inst.layer.index === topmost.layer.index && inst.get_zindex() > topmost.get_zindex())
+			{
+				topmost = inst;
+				topx = lx;
+				topy = ly;
+				continue;
+			}
+		}
+		
+		if (topmost)
+			GetDragDropBehavior(topmost).onDown(src, topx, topy);
+	};
+	
+	behaviorProto.onInputMove = function (src, pageX, pageY)
+	{
+		var offsetLeft = this.runtime.canvas.offsetLeft;
+		var offsetTop = this.runtime.canvas.offsetTop;
+		var x = pageX - offsetLeft;
+		var y = pageY - offsetTop;
+		var lx, ly;
+		
+		var arr = this.my_instances.valuesRef();
+		
+		var i, len, b, inst;
+		for (i = 0, len = arr.length; i < len; i++)
+		{
+			inst = arr[i];
+			b = GetDragDropBehavior(inst);
+			
+			if (!b.enabled || !b.dragging || (b.dragging && b.dragsource !== src))
+				continue;		// don't consider disabled, not-dragging, or dragging by other sources
+				
+			lx = inst.layer.canvasToLayer(x, y, true);
+			ly = inst.layer.canvasToLayer(x, y, false);
+			b.onMove(lx, ly);
+		}
+	};
+	
+	behaviorProto.onInputUp = function (src)
+	{
+		var arr = this.my_instances.valuesRef();
+		
+		var i, len, b, inst;
+		for (i = 0, len = arr.length; i < len; i++)
+		{
+			inst = arr[i];
+			b = GetDragDropBehavior(inst);
+			
+			if (b.dragging && b.dragsource === src)
+				b.onUp();
+		}
+	};
+		
+	/////////////////////////////////////
+	// Behavior type class
+	behaviorProto.Type = function(behavior, objtype)
+	{
+		this.behavior = behavior;
+		this.objtype = objtype;
+		this.runtime = behavior.runtime;
+	};
+	
+	var behtypeProto = behaviorProto.Type.prototype;
+
+	behtypeProto.onCreate = function()
+	{
+	};
+
+	/////////////////////////////////////
+	// Behavior instance class
+	behaviorProto.Instance = function(type, inst)
+	{
+		this.type = type;
+		this.behavior = type.behavior;
+		this.inst = inst;				// associated object instance to modify
+		this.runtime = type.runtime;
+	};
+	
+	var behinstProto = behaviorProto.Instance.prototype;
+
+	behinstProto.onCreate = function()
+	{
+		this.dragging = false;
+		this.dx = 0;
+		this.dy = 0;
+		this.dragsource = "<none>";
+		
+		// 0 = both, 1 = horizontal, 2 = vertical
+		this.axes = this.properties[0];
+		this.enabled = this.properties[1];
+	};
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "enabled": this.enabled };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.enabled = o["enabled"];
+		this.dragging = false;
+	};
+	
+	behinstProto.onDown = function(src, x, y)
+	{
+		this.dx = x - this.inst.x;
+		this.dy = y - this.inst.y;
+		this.dragging = true;
+		this.dragsource = src;
+		
+		// Trigger 'On drag start'
+		this.runtime.isInUserInputEvent = true;
+		this.runtime.trigger(cr.behaviors.DragnDrop.prototype.cnds.OnDragStart, this.inst);
+		this.runtime.isInUserInputEvent = false;
+	};
+	
+	behinstProto.onMove = function(x, y)
+	{
+		var newx = x - this.dx;
+		var newy = y - this.dy;
+		
+		if (this.axes === 0)		// both
+		{
+			if (this.inst.x !== newx || this.inst.y !== newy)
+			{
+				this.inst.x = newx;
+				this.inst.y = newy;
+				this.inst.set_bbox_changed();
+			}
+		}
+		else if (this.axes === 1)	// horizontal
+		{
+			if (this.inst.x !== newx)
+			{
+				this.inst.x = newx;
+				this.inst.set_bbox_changed();
+			}
+		}
+		else if (this.axes === 2)	// vertical
+		{
+			if (this.inst.y !== newy)
+			{
+				this.inst.y = newy;
+				this.inst.set_bbox_changed();
+			}
+		}
+	};
+	
+	behinstProto.onUp = function()
+	{
+		this.dragging = false;
+			
+		// Trigger 'On drop'
+		this.runtime.isInUserInputEvent = true;
+		this.runtime.trigger(cr.behaviors.DragnDrop.prototype.cnds.OnDrop, this.inst);
+		this.runtime.isInUserInputEvent = false;
+	};
+
+	behinstProto.tick = function ()
+	{
+		//var dt = this.runtime.getDt(this.inst);
+		
+		// called every tick for you to update this.inst as necessary
+		// dt is the amount of time passed since the last tick, in case it's a movement
+	};
+	
+
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+
+	Cnds.prototype.IsDragging = function ()
+	{
+		return this.dragging;
+	};
+	
+	Cnds.prototype.OnDragStart = function ()
+	{
+		return true;
+	};
+	
+	Cnds.prototype.OnDrop = function ()
+	{
+		return true;
+	};
+	
+	Cnds.prototype.IsEnabled = function ()
+	{
+		return !!this.enabled;
+	};
+	
+	behaviorProto.cnds = new Cnds();
+
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+
+	Acts.prototype.SetEnabled = function (s)
+	{
+		this.enabled = (s !== 0);
+		
+		// Got disabled: cancel any drag
+		if (!this.enabled)
+			this.dragging = false;
+	};
+	
+	Acts.prototype.Drop = function ()
+	{
+		if (this.dragging)
+			this.onUp();
+	};
+	
+	behaviorProto.acts = new Acts();
+
+	//////////////////////////////////////
+	// Expressions
+	function Exps() {};
+	behaviorProto.exps = new Exps();
+	
+}());
+
+// Pin
+// ECMAScript 5 strict mode
+
+;
+;
+
+/////////////////////////////////////
+// Behavior class
+cr.behaviors.Pin = function(runtime)
+{
+	this.runtime = runtime;
+};
+
+(function ()
+{
+	var behaviorProto = cr.behaviors.Pin.prototype;
+		
+	/////////////////////////////////////
+	// Behavior type class
+	behaviorProto.Type = function(behavior, objtype)
+	{
+		this.behavior = behavior;
+		this.objtype = objtype;
+		this.runtime = behavior.runtime;
+	};
+	
+	var behtypeProto = behaviorProto.Type.prototype;
+
+	behtypeProto.onCreate = function()
+	{
+	};
+
+	/////////////////////////////////////
+	// Behavior instance class
+	behaviorProto.Instance = function(type, inst)
+	{
+		this.type = type;
+		this.behavior = type.behavior;
+		this.inst = inst;				// associated object instance to modify
+		this.runtime = type.runtime;
+	};
+	
+	var behinstProto = behaviorProto.Instance.prototype;
+
+	behinstProto.onCreate = function()
+	{
+		this.pinObject = null;
+		this.pinObjectUid = -1;		// for loading
+		this.pinAngle = 0;
+		this.pinDist = 0;
+		this.myStartAngle = 0;
+		this.theirStartAngle = 0;
+		this.lastKnownAngle = 0;
+		this.mode = 0;				// 0 = position & angle; 1 = position; 2 = angle; 3 = rope; 4 = bar
+		
+		var self = this;
+		
+		// Need to know if pinned object gets destroyed
+		if (!this.recycled)
+		{
+			this.myDestroyCallback = (function(inst) {
+													self.onInstanceDestroyed(inst);
+												});
+		}
+										
+		this.runtime.addDestroyCallback(this.myDestroyCallback);
+	};
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return {
+			"uid": this.pinObject ? this.pinObject.uid : -1,
+			"pa": this.pinAngle,
+			"pd": this.pinDist,
+			"msa": this.myStartAngle,
+			"tsa": this.theirStartAngle,
+			"lka": this.lastKnownAngle,
+			"m": this.mode
+		};
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.pinObjectUid = o["uid"];		// wait until afterLoad to look up		
+		this.pinAngle = o["pa"];
+		this.pinDist = o["pd"];
+		this.myStartAngle = o["msa"];
+		this.theirStartAngle = o["tsa"];
+		this.lastKnownAngle = o["lka"];
+		this.mode = o["m"];
+	};
+	
+	behinstProto.afterLoad = function ()
+	{
+		// Look up the pinned object UID now getObjectByUID is available
+		if (this.pinObjectUid === -1)
+			this.pinObject = null;
+		else
+		{
+			this.pinObject = this.runtime.getObjectByUID(this.pinObjectUid);
+;
+		}
+		
+		this.pinObjectUid = -1;
+	};
+	
+	behinstProto.onInstanceDestroyed = function (inst)
+	{
+		// Pinned object being destroyed
+		if (this.pinObject == inst)
+			this.pinObject = null;
+	};
+	
+	behinstProto.onDestroy = function()
+	{
+		this.pinObject = null;
+		this.runtime.removeDestroyCallback(this.myDestroyCallback);
+	};
+	
+	behinstProto.tick = function ()
+	{
+		// do work in tick2 instead, after events to get latest object position
+	};
+
+	behinstProto.tick2 = function ()
+	{
+		if (!this.pinObject)
+			return;
+			
+		// Instance angle has changed by events/something else
+		if (this.lastKnownAngle !== this.inst.angle)
+			this.myStartAngle = cr.clamp_angle(this.myStartAngle + (this.inst.angle - this.lastKnownAngle));
+			
+		var newx = this.inst.x;
+		var newy = this.inst.y;
+		
+		if (this.mode === 3 || this.mode === 4)		// rope mode or bar mode
+		{
+			var dist = cr.distanceTo(this.inst.x, this.inst.y, this.pinObject.x, this.pinObject.y);
+			
+			if ((dist > this.pinDist) || (this.mode === 4 && dist < this.pinDist))
+			{
+				var a = cr.angleTo(this.pinObject.x, this.pinObject.y, this.inst.x, this.inst.y);
+				newx = this.pinObject.x + Math.cos(a) * this.pinDist;
+				newy = this.pinObject.y + Math.sin(a) * this.pinDist;
+			}
+		}
+		else
+		{
+			newx = this.pinObject.x + Math.cos(this.pinObject.angle + this.pinAngle) * this.pinDist;
+			newy = this.pinObject.y + Math.sin(this.pinObject.angle + this.pinAngle) * this.pinDist;
+		}
+		
+		var newangle = cr.clamp_angle(this.myStartAngle + (this.pinObject.angle - this.theirStartAngle));
+		this.lastKnownAngle = newangle;
+		
+		if ((this.mode === 0 || this.mode === 1 || this.mode === 3 || this.mode === 4)
+			&& (this.inst.x !== newx || this.inst.y !== newy))
+		{
+			this.inst.x = newx;
+			this.inst.y = newy;
+			this.inst.set_bbox_changed();
+		}
+		
+		if ((this.mode === 0 || this.mode === 2) && (this.inst.angle !== newangle))
+		{
+			this.inst.angle = newangle;
+			this.inst.set_bbox_changed();
+		}
+	};
+	
+
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+
+	Cnds.prototype.IsPinned = function ()
+	{
+		return !!this.pinObject;
+	};
+	
+	behaviorProto.cnds = new Cnds();
+
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+
+	Acts.prototype.Pin = function (obj, mode_)
+	{
+		if (!obj)
+			return;
+			
+		var otherinst = obj.getFirstPicked(this.inst);
+		
+		if (!otherinst)
+			return;
+			
+		this.pinObject = otherinst;
+		this.pinAngle = cr.angleTo(otherinst.x, otherinst.y, this.inst.x, this.inst.y) - otherinst.angle;
+		this.pinDist = cr.distanceTo(otherinst.x, otherinst.y, this.inst.x, this.inst.y);
+		this.myStartAngle = this.inst.angle;
+		this.lastKnownAngle = this.inst.angle;
+		this.theirStartAngle = otherinst.angle;
+		this.mode = mode_;
+	};
+	
+	Acts.prototype.Unpin = function ()
+	{
+		this.pinObject = null;
+	};
+	
+	behaviorProto.acts = new Acts();
+
+	//////////////////////////////////////
+	// Expressions
+	function Exps() {};
+
+	Exps.prototype.PinnedUID = function (ret)
+	{
+		ret.set_int(this.pinObject ? this.pinObject.uid : -1);
+	};
+	
+	behaviorProto.exps = new Exps();
+	
+}());
+
+// Rotate
+// ECMAScript 5 strict mode
+
+;
+;
+
+/////////////////////////////////////
+// Behavior class
+cr.behaviors.Rotate = function(runtime)
+{
+	this.runtime = runtime;
+};
+
+(function ()
+{
+	var behaviorProto = cr.behaviors.Rotate.prototype;
+		
+	/////////////////////////////////////
+	// Behavior type class
+	behaviorProto.Type = function(behavior, objtype)
+	{
+		this.behavior = behavior;
+		this.objtype = objtype;
+		this.runtime = behavior.runtime;
+	};
+	
+	var behtypeProto = behaviorProto.Type.prototype;
+
+	behtypeProto.onCreate = function()
+	{
+	};
+
+	/////////////////////////////////////
+	// Behavior instance class
+	behaviorProto.Instance = function(type, inst)
+	{
+		this.type = type;
+		this.behavior = type.behavior;
+		this.inst = inst;				// associated object instance to modify
+		this.runtime = type.runtime;
+	};
+	
+	var behinstProto = behaviorProto.Instance.prototype;
+
+	behinstProto.onCreate = function()
+	{
+		this.speed = cr.to_radians(this.properties[0]);
+		this.acc = cr.to_radians(this.properties[1]);
+		this.enabled = this.properties[2];
+	};
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return {
+			"speed": this.speed,
+			"acc": this.acc,
+			"e": this.enabled
+		};
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.speed = o["speed"];
+		this.acc = o["acc"];
+		
+		// Enabled property added in r48; treat missing entry as enabled
+		if (o.hasOwnProperty("e"))
+			this.enabled = o["e"];
+		else
+			this.enabled = true;
+	};
+
+	behinstProto.tick = function ()
+	{
+		if (!this.enabled)
+			return;
+		
+		var dt = this.runtime.getDt(this.inst);
+		
+		if (dt === 0)
+			return;
+			
+		if (this.acc !== 0)
+			this.speed += this.acc * dt;
+			
+		if (this.speed !== 0)
+		{
+			this.inst.angle = cr.clamp_angle(this.inst.angle + this.speed * dt);
+			this.inst.set_bbox_changed();
+		}
+	};
+	
+
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+	
+	Cnds.prototype.IsEnabled = function ()
+	{
+		return this.enabled;
+	};
+	
+	behaviorProto.cnds = new Cnds();
+
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+
+	Acts.prototype.SetSpeed = function (s)
+	{
+		this.speed = cr.to_radians(s);
+	};
+	
+	Acts.prototype.SetAcceleration = function (a)
+	{
+		this.acc = cr.to_radians(a);
+	};
+	
+	Acts.prototype.SetEnabled = function (en)
+	{
+		this.enabled = (en === 1);
+	};
+	
+	behaviorProto.acts = new Acts();
+
+	//////////////////////////////////////
+	// Expressions
+	function Exps() {};
+
+	Exps.prototype.Speed = function (ret)
+	{
+		ret.set_float(cr.to_degrees(this.speed));
+	};
+	
+	Exps.prototype.Acceleration = function (ret)
+	{
+		ret.set_float(cr.to_degrees(this.acc));
+	};
+	
+	behaviorProto.exps = new Exps();
+	
+}());
+
 cr.getObjectRefTable = function () {
 	return [
 		cr.plugins_.Sprite,
-		cr.behaviors.solid,
-		cr.plugins_.Keyboard,
-		cr.plugins_.Text,
 		cr.behaviors.Bullet,
+		cr.plugins_.Text,
 		cr.plugins_.TiledBg,
+		cr.behaviors.solid,
+		cr.behaviors.DragnDrop,
+		cr.plugins_.Button,
+		cr.behaviors.Pin,
+		cr.plugins_.Keyboard,
+		cr.behaviors.Rotate,
 		cr.plugins_.Audio,
 		cr.system_object.prototype.cnds.OnLayoutStart,
 		cr.behaviors.Bullet.prototype.acts.SetAngleOfMotion,
 		cr.system_object.prototype.exps.random,
-		cr.system_object.prototype.acts.SetLayerEffectParam,
-		cr.plugins_.Text.prototype.acts.SetText,
 		cr.system_object.prototype.acts.SetLayerVisible,
-		cr.plugins_.Audio.prototype.acts.Play,
 		cr.system_object.prototype.cnds.EveryTick,
-		cr.behaviors.Bullet.prototype.exps.Speed,
+		cr.plugins_.Text.prototype.acts.SetText,
+		cr.behaviors.Bullet.prototype.exps.AngleOfMotion,
+		cr.system_object.prototype.cnds.IsGroupActive,
 		cr.plugins_.Keyboard.prototype.cnds.IsKeyDown,
 		cr.plugins_.Sprite.prototype.cnds.CompareY,
 		cr.plugins_.Sprite.prototype.acts.SetPos,
@@ -29394,11 +30659,16 @@ cr.getObjectRefTable = function () {
 		cr.plugins_.Sprite.prototype.cnds.CompareX,
 		cr.system_object.prototype.acts.AddVar,
 		cr.system_object.prototype.acts.SetVar,
+		cr.behaviors.Bullet.prototype.exps.Speed,
 		cr.plugins_.Sprite.prototype.acts.Destroy,
 		cr.plugins_.Keyboard.prototype.cnds.OnKey,
 		cr.system_object.prototype.cnds.LayerVisible,
 		cr.system_object.prototype.acts.GoToLayout,
-		cr.plugins_.Sprite.prototype.cnds.OnCollision
+		cr.plugins_.Sprite.prototype.cnds.OnCollision,
+		cr.plugins_.Audio.prototype.acts.Play,
+		cr.behaviors.Pin.prototype.acts.Pin,
+		cr.behaviors.DragnDrop.prototype.cnds.OnDrop,
+		cr.behaviors.DragnDrop.prototype.cnds.OnDragStart
 	];
 };
 
