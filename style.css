@@ -1,14 +1,46 @@
-html, body {
-	padding: 0;
-	margin: 0;
-	overflow: hidden;
-	
-	background: #000000;
-	color: white;
+html {
+  height: 100%;
 }
 
-html, body, canvas {
-	touch-action: none;
-	touch-action-delay: none;
+body {
+  background-image: url(assets/bckg.png);
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Open Sans', sans-serif;
+  min-height: 100%;
 }
 
+.content {
+  background-color: rgba(227, 242, 253, 0.5);
+  flex: 1;
+  padding: 20px;
+}
+
+.footer {
+  background-color: #f3e5f5;
+  padding: 20px;
+}
+
+h1 {
+  color: rgb(25, 25, 112);
+  font-size: 40px;
+}
+
+p {
+  font-size: 14pt;
+}
+
+.banner {
+  margin: 20px;
+  padding: 5px;
+}
+
+.lead {
+  font-size: 16pt;
+  margin: 10px;
+}
+
+.links {
+  margin: 20px;
+}

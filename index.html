@@ -1,25 +1,76 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="UTF-8">
-<title>iSMPong</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-
-	<link rel="manifest" href="appmanifest.json">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128.png">
-	<link rel="apple-touch-icon" sizes="256x256" href="icons/icon-256.png">
-	<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
-	<link rel="icon" type="image/png" href="icons/icon-512.png">
-
-<link rel="stylesheet" href="style.css">
-
+  <title>Multiplayer — мы любим игры</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+  <link rel="icon" type="image/png" href="assets/favicon.ico">
 </head>
+
 <body>
-<div id="fb-root"></div>
-	<script src="opus.js"></script>
-	<script src="c2runtime.js"></script>
-	<script src="start.js"></script>
-	<script src="register-sw.js"></script>
+  <div class="content">
+    <div class="banner">
+      <h1>Multiplayer</h1>
+    </div>
+    <div class="lead">
+      <p>Медиа о консольных видеоиграх для милых дам и скромных сударей
+    </div>
+      <div class="links">
+        <a href="http://t.me/multiplayer">Канал в Telegram</a>
+        <br>
+        <a href="http://t.me/multichat">Чат в Telegram</a>
+      </div>
+    <div class="lead">
+      <p>Блог о разработке игр</p>
+    </div>
+      <div class="links">
+        <a href="https://t.me/singleplayered">Канал в Telegram</a>
+      </div>
+    <div class="lead">
+      <p>Игры</p>
+    </div>
+      <div class="links">
+        <a href="https://kawaiier.github.io/qvsm/">QvsM v 1.1</a>
+        <br>
+        <a href="https://kawaiier.github.io/pong2/">iSMPong v 0.1.0 (NEW!)</a>
+        <br>
+        <a href="https://kawaiier.github.io/mrigra/">Mr Igra v 1.0</a>
+        <br>
+        <br>
+        <a href="https://github.com/kawaiier/kawaiier.github.io">Информация об обновлениях игр</a>
+      </div>
+  </div>
+  <div class="footer">
+    <p>©Kawaiier  <a href="https://facebook.com/kawaiier">@Facebook</a> & <a href="https://twitter.com/kawaiier">@Twitter</a></p>
+  </div>
+  <!-- Yandex.Metrika counter -->
+  <script type="text/javascript" >
+      (function (d, w, c) {
+          (w[c] = w[c] || []).push(function() {
+              try {
+                  w.yaCounter50394385 = new Ya.Metrika2({
+                      id:50394385,
+                      clickmap:true,
+                      trackLinks:true,
+                      accurateTrackBounce:true
+                  });
+              } catch(e) { }
+          });
+
+          var n = d.getElementsByTagName("script")[0],
+              s = d.createElement("script"),
+              f = function () { n.parentNode.insertBefore(s, n); };
+          s.type = "text/javascript";
+          s.async = true;
+          s.src = "https://mc.yandex.ru/metrika/tag.js";
+
+          if (w.opera == "[object Opera]") {
+              d.addEventListener("DOMContentLoaded", f, false);
+          } else { f(); }
+      })(document, window, "yandex_metrika_callbacks2");
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/50394385" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <!-- /Yandex.Metrika counter -->
 </body>
 </html>
