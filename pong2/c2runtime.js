@@ -30667,6 +30667,7 @@ cr.getObjectRefTable = function () {
 		cr.plugins_.Sprite.prototype.cnds.OnCollision,
 		cr.plugins_.Audio.prototype.acts.Play,
 		cr.behaviors.Pin.prototype.acts.Pin,
+		cr.plugins_.Audio.prototype.acts.Preload,
 		cr.behaviors.DragnDrop.prototype.cnds.OnDrop,
 		cr.behaviors.DragnDrop.prototype.cnds.OnDragStart
 	];
