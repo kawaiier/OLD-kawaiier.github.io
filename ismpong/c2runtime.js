@@ -24582,7 +24582,7 @@ cr.plugins_.TiledBg = function(runtime)
 
 }());
 
-// Button
+// Slider bar
 // ECMAScript 5 strict mode
 
 ;
@@ -24590,7 +24590,7 @@ cr.plugins_.TiledBg = function(runtime)
 
 /////////////////////////////////////
 // Plugin class
-cr.plugins_.Button = function(runtime)
+cr.plugins_.sliderbar = function(runtime)
 {
 	this.runtime = runtime;
 };
@@ -24598,7 +24598,7 @@ cr.plugins_.Button = function(runtime)
 (function ()
 {
 	/////////////////////////////////////
-	var pluginProto = cr.plugins_.Button.prototype;
+	var pluginProto = cr.plugins_.sliderbar.prototype;
 		
 	/////////////////////////////////////
 	// Object type class
@@ -24628,58 +24628,42 @@ cr.plugins_.Button = function(runtime)
 	// called whenever an instance is created
 	instanceProto.onCreate = function()
 	{
-		this.isCheckbox = (this.properties[0] === 1);
+		this.elem = document.createElement("input");
+		this.elem.type = "range";
 		
-		this.inputElem = document.createElement("input");
+		this.elem["max"] = this.properties[2];
+		this.elem["min"] = this.properties[1];
+		this.elem["step"] = this.properties[3];
+		this.elem["value"] = this.properties[0];
 		
-		if (this.isCheckbox)
-			this.elem = document.createElement("label");
-		else
-			this.elem = this.inputElem;
-			
-		this.labelText = null;
-		
-		this.inputElem.type = (this.isCheckbox ? "checkbox" : "button");
-		this.inputElem.id = this.properties[7];
+		this.elem.disabled = !this.properties[6];
+		this.elem.id = this.properties[7];
+		this.elem.title = this.properties[4];
 		document.body.appendChild(this.elem);
 		
-		if (this.isCheckbox)
-		{
-			this.elem.appendChild(this.inputElem);
-			this.labelText = document.createTextNode(this.properties[1]);
-			this.elem.appendChild(this.labelText);
-			
-			this.inputElem.checked = this.properties[6];
-			
-			// Avoid yucky serif font for checkbox labels
-			this.elem.style.fontFamily = "sans-serif";
-			
-			// Allow setting width and height on label
-			this.elem.style.display = "inline-block";
-			this.elem.style.color = "black";
-		}
-		else
-			this.inputElem.value = this.properties[1];
-		
-		this.elem.title = this.properties[2];
-		this.inputElem.disabled = !this.properties[4];
-		
-		this.autoFontSize = this.properties[5];
 		this.element_hidden = false;
 		
-		if (!this.properties[3])		// initially invisible
+		if (!this.properties[5])			// initially invisible
 		{
 			this.elem.style.display = "none";
 			this.visible = false;
 			this.element_hidden = true;
 		}
 		
-		this.inputElem.onclick = (function (self) {
+		this.elem.onclick = (function (self) {
 			return function(e) {
 				e.stopPropagation();
 				
 				self.runtime.isInUserInputEvent = true;
-				self.runtime.trigger(cr.plugins_.Button.prototype.cnds.OnClicked, self);
+				self.runtime.trigger(cr.plugins_.sliderbar.prototype.cnds.OnClicked, self);
+				self.runtime.isInUserInputEvent = false;
+			};
+		})(this);
+		
+		this.elem.onchange = (function (self) {
+			return function(e) {
+				self.runtime.isInUserInputEvent = true;
+				self.runtime.trigger(cr.plugins_.sliderbar.prototype.cnds.OnChanged, self);
 				self.runtime.isInUserInputEvent = false;
 			};
 		})(this);
@@ -24730,37 +24714,21 @@ cr.plugins_.Button = function(runtime)
 	instanceProto.saveToJSON = function ()
 	{
 		var o = {
-			"tooltip": this.elem.title,
-			"disabled": !!this.inputElem.disabled
+			"v": this.elem["value"],
+			"mi": this.elem["min"],
+			"ma": this.elem["max"],
+			"s": this.elem["step"]
 		};
-			
-		if (this.isCheckbox)
-		{
-			o["checked"] = !!this.inputElem.checked;
-			o["text"] = this.labelText.nodeValue;
-		}
-		else
-		{
-			o["text"] = this.elem.value;
-		}
 		
 		return o;
 	};
 	
 	instanceProto.loadFromJSON = function (o)
 	{
-		this.elem.title = o["tooltip"];
-		this.inputElem.disabled = o["disabled"];
-		
-		if (this.isCheckbox)
-		{
-			this.inputElem.checked = o["checked"];
-			this.labelText.nodeValue = o["text"];
-		}
-		else
-		{
-			this.elem.value = o["text"];
-		}
+		this.elem["min"] = o["mi"];
+		this.elem["max"] = o["ma"];
+		this.elem["step"] = o["s"];
+		this.elem["value"] = o["v"];
 	};
 	
 	instanceProto.onDestroy = function ()
@@ -24842,9 +24810,6 @@ cr.plugins_.Button = function(runtime)
 		this.elem.style.top = offy + "px";
 		this.elem.style.width = Math.round(right - left) + "px";
 		this.elem.style.height = Math.round(bottom - top) + "px";
-		
-		if (this.autoFontSize)
-			this.elem.style.fontSize = ((this.layer.getScale(true) / this.runtime.devicePixelRatio) - 0.2) + "em";
 	};
 	
 	// only called if a layout object
@@ -24866,23 +24831,14 @@ cr.plugins_.Button = function(runtime)
 		return true;
 	};
 	
-	Cnds.prototype.IsChecked = function ()
+	Cnds.prototype.OnChanged = function ()
 	{
-		return this.isCheckbox && this.inputElem.checked;
+		return true;
 	};
 	
-	Cnds.prototype.CompareText = function(text_to_compare, case_sensitive)
+	Cnds.prototype.CompareValue = function (cmp, x)
 	{
-		var text;
-		if (this.isCheckbox)
-			text = this.labelText.nodeValue;
-		else
-			text = this.elem.value;
-			
-		if (case_sensitive)
-			return text == text_to_compare;
-		else
-			return cr.equals_nocase(text, text_to_compare);
+		return cr.do_cmp(parseFloat(this.elem["value"]), cmp, x);
 	};
 	
 	pluginProto.cnds = new Cnds();
@@ -24891,14 +24847,6 @@ cr.plugins_.Button = function(runtime)
 	// Actions
 	function Acts() {};
 
-	Acts.prototype.SetText = function (text)
-	{
-		if (this.isCheckbox)
-			this.labelText.nodeValue = text;
-		else
-			this.elem.value = text;
-	};
-	
 	Acts.prototype.SetTooltip = function (text)
 	{
 		this.elem.title = text;
@@ -24909,40 +24857,34 @@ cr.plugins_.Button = function(runtime)
 		this.visible = (vis !== 0);
 	};
 	
-	Acts.prototype.SetEnabled = function (en)
-	{
-		this.inputElem.disabled = (en === 0);
-	};
-	
-	Acts.prototype.SetFocus = function ()
-	{
-		this.inputElem.focus();
-	};
-	
-	Acts.prototype.SetBlur = function ()
-	{
-		this.inputElem.blur();
-	};
-	
 	Acts.prototype.SetCSSStyle = function (p, v)
 	{
 		this.elem.style[cr.cssToCamelCase(p)] = v;
 	};
 	
-	Acts.prototype.SetChecked = function (c)
+	Acts.prototype.SetValue = function (x)
 	{
-		if (!this.isCheckbox)
-			return;
-			
-		this.inputElem.checked = (c === 1);
+		this.elem["value"] = x;
 	};
 	
-	Acts.prototype.ToggleChecked = function ()
+	Acts.prototype.SetMaximum = function (x)
 	{
-		if (!this.isCheckbox)
-			return;
-			
-		this.inputElem.checked = !this.inputElem.checked;
+		this.elem["max"] = x;
+	};
+	
+	Acts.prototype.SetMinimum = function (x)
+	{
+		this.elem["min"] = x;
+	};
+	
+	Acts.prototype.SetStep = function (x)
+	{
+		this.elem["step"] = x;
+	};
+	
+	Acts.prototype.SetEnabled = function (en)
+	{
+		this.elem.disabled = (en === 0);
 	};
 	
 	pluginProto.acts = new Acts();
@@ -24951,13 +24893,25 @@ cr.plugins_.Button = function(runtime)
 	// Expressions
 	function Exps() {};
 	
-	Exps.prototype.Text = function (ret)
+	Exps.prototype.Value = function (ret)
 	{
-		if (this.isCheckbox)
-			ret.set_string(this.labelText.nodeValue);
-		else
-			ret.set_string(this.elem.value);
-	}
+		ret.set_float(parseFloat(this.elem["value"]) || 0);
+	};
+	
+	Exps.prototype.Maximum = function (ret)
+	{
+		ret.set_float(parseFloat(this.elem["max"]) || 0);
+	};
+	
+	Exps.prototype.Minimum = function (ret)
+	{
+		ret.set_float(parseFloat(this.elem["min"]) || 0);
+	};
+	
+	Exps.prototype.Step = function (ret)
+	{
+		ret.set_float(parseFloat(this.elem["step"]) || 0);
+	};
 	
 	pluginProto.exps = new Exps();
 
@@ -30485,8 +30439,8 @@ cr.getObjectRefTable = function () {
 		cr.plugins_.TiledBg,
 		cr.behaviors.solid,
 		cr.behaviors.DragnDrop,
-		cr.plugins_.Button,
 		cr.behaviors.Pin,
+		cr.plugins_.sliderbar,
 		cr.plugins_.Keyboard,
 		cr.plugins_.Audio,
 		cr.system_object.prototype.cnds.OnLayoutStart,
@@ -30495,9 +30449,6 @@ cr.getObjectRefTable = function () {
 		cr.system_object.prototype.acts.SetLayerVisible,
 		cr.system_object.prototype.cnds.EveryTick,
 		cr.plugins_.Text.prototype.acts.SetText,
-		cr.behaviors.Bullet.prototype.exps.AngleOfMotion,
-		cr.plugins_.Sprite.prototype.acts.SetAnimSpeed,
-		cr.behaviors.Bullet.prototype.exps.Speed,
 		cr.system_object.prototype.cnds.IsGroupActive,
 		cr.plugins_.Keyboard.prototype.cnds.IsKeyDown,
 		cr.plugins_.Sprite.prototype.cnds.CompareY,
@@ -30506,17 +30457,20 @@ cr.getObjectRefTable = function () {
 		cr.plugins_.Sprite.prototype.exps.Y,
 		cr.plugins_.Sprite.prototype.cnds.CompareX,
 		cr.system_object.prototype.acts.AddVar,
-		cr.system_object.prototype.acts.SetVar,
 		cr.plugins_.Sprite.prototype.acts.Destroy,
+		cr.plugins_.Sprite.prototype.cnds.OnCollision,
+		cr.plugins_.Audio.prototype.acts.Play,
 		cr.plugins_.Keyboard.prototype.cnds.OnKey,
 		cr.system_object.prototype.cnds.LayerVisible,
 		cr.system_object.prototype.acts.GoToLayout,
-		cr.plugins_.Sprite.prototype.cnds.OnCollision,
-		cr.plugins_.Audio.prototype.acts.Play,
 		cr.behaviors.Pin.prototype.acts.Pin,
-		cr.plugins_.Audio.prototype.acts.Preload,
 		cr.behaviors.DragnDrop.prototype.cnds.OnDrop,
-		cr.behaviors.DragnDrop.prototype.cnds.OnDragStart
+		cr.system_object.prototype.cnds.CompareBoolVar,
+		cr.plugins_.sliderbar.prototype.acts.SetValue,
+		cr.plugins_.sliderbar.prototype.cnds.OnChanged,
+		cr.plugins_.sliderbar.prototype.cnds.CompareValue,
+		cr.plugins_.Audio.prototype.acts.SetMuted,
+		cr.system_object.prototype.acts.SetVar
 	];
 };
 
