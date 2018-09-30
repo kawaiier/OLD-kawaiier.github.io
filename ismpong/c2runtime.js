@@ -30447,6 +30447,7 @@ cr.getObjectRefTable = function () {
 		cr.behaviors.Bullet.prototype.acts.SetAngleOfMotion,
 		cr.system_object.prototype.exps.random,
 		cr.system_object.prototype.acts.SetLayerVisible,
+		cr.behaviors.Bullet.prototype.acts.SetSpeed,
 		cr.system_object.prototype.cnds.EveryTick,
 		cr.plugins_.Text.prototype.acts.SetText,
 		cr.system_object.prototype.cnds.IsGroupActive,
@@ -30468,9 +30469,14 @@ cr.getObjectRefTable = function () {
 		cr.system_object.prototype.cnds.CompareBoolVar,
 		cr.plugins_.sliderbar.prototype.acts.SetValue,
 		cr.plugins_.sliderbar.prototype.cnds.OnChanged,
+		cr.system_object.prototype.acts.SetVar,
+		cr.plugins_.sliderbar.prototype.exps.Value,
 		cr.plugins_.sliderbar.prototype.cnds.CompareValue,
+		cr.plugins_.Text.prototype.acts.SetFontColor,
+		cr.system_object.prototype.exps.rgbex,
 		cr.plugins_.Audio.prototype.acts.SetMuted,
-		cr.system_object.prototype.acts.SetVar
+		cr.plugins_.Audio.prototype.acts.AddMuteEffect,
+		cr.plugins_.Audio.prototype.acts.RemoveEffects
 	];
 };
 
