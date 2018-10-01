@@ -29624,6 +29624,239 @@ cr.behaviors.Bullet = function(runtime)
 	
 }());
 
+// Timer
+// ECMAScript 5 strict mode
+
+;
+;
+
+/////////////////////////////////////
+// Behavior class
+cr.behaviors.Timer = function(runtime)
+{
+	this.runtime = runtime;
+};
+
+(function ()
+{
+	var behaviorProto = cr.behaviors.Timer.prototype;
+		
+	/////////////////////////////////////
+	// Behavior type class
+	behaviorProto.Type = function(behavior, objtype)
+	{
+		this.behavior = behavior;
+		this.objtype = objtype;
+		this.runtime = behavior.runtime;
+	};
+	
+	var behtypeProto = behaviorProto.Type.prototype;
+
+	behtypeProto.onCreate = function()
+	{
+	};
+
+	/////////////////////////////////////
+	// Behavior instance class
+	behaviorProto.Instance = function(type, inst)
+	{
+		this.type = type;
+		this.behavior = type.behavior;
+		this.inst = inst;				// associated object instance to modify
+		this.runtime = type.runtime;
+	};
+	
+	var behinstProto = behaviorProto.Instance.prototype;
+
+	behinstProto.onCreate = function()
+	{
+		this.timers = {};
+	};
+	
+	behinstProto.onDestroy = function ()
+	{
+		cr.wipe(this.timers);
+	};
+	
+	// called when saving the full state of the game
+	behinstProto.saveToJSON = function ()
+	{
+		var o = {};
+		
+		var p, t;
+		for (p in this.timers)
+		{
+			if (this.timers.hasOwnProperty(p))
+			{
+				t = this.timers[p];
+				
+				o[p] = {
+					"c": t.current.sum,
+					"t": t.total.sum,
+					"d": t.duration,
+					"r": t.regular,
+					"p": t.paused
+				};
+			}
+		}
+		
+		return o;
+	};
+	
+	// called when loading the full state of the game
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.timers = {};
+		
+		var p;
+		for (p in o)
+		{
+			if (o.hasOwnProperty(p))
+			{
+				this.timers[p] = {
+					current: new cr.KahanAdder(),
+					total: new cr.KahanAdder(),
+					duration: o[p]["d"],
+					regular: o[p]["r"],
+					paused: !!o[p]["p"]
+				};
+				
+				this.timers[p].current.sum = o[p]["c"];
+				this.timers[p].total.sum = o[p]["t"];
+			}
+		}
+	};
+
+	behinstProto.tick = function ()
+	{
+		var dt = this.runtime.getDt(this.inst);
+		
+		var p, t;
+		
+		for (p in this.timers)
+		{
+			if (this.timers.hasOwnProperty(p))
+			{
+				t = this.timers[p];
+				if (!t.paused)
+				{
+					t.current.add(dt);
+					t.total.add(dt);
+				}
+			}
+		}
+	};
+	
+	behinstProto.tick2 = function ()
+	{
+		// Reset any regular timers and remove any one-off timers
+		var p, t;
+		
+		for (p in this.timers)
+		{
+			if (this.timers.hasOwnProperty(p))
+			{
+				t = this.timers[p];
+				
+				if (t.current.sum >= t.duration)
+				{
+					if (t.regular)
+						t.current.sum -= t.duration;
+					else
+						delete this.timers[p];
+				}
+			}
+		}
+	};
+	
+
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+
+	Cnds.prototype.OnTimer = function (tag_)
+	{
+		tag_ = tag_.toLowerCase();
+		
+		var t = this.timers[tag_];
+		
+		if (!t)
+			return false;
+		
+		return t.current.sum >= t.duration;
+	};
+	
+	Cnds.prototype.IsTimerRunning = function (tag_)
+	{
+		return this.timers.hasOwnProperty(tag_.toLowerCase());
+	};
+	
+	Cnds.prototype.IsTimerPaused = function (tag_)
+	{
+		var t = this.timers[tag_.toLowerCase()];
+		return t && t.paused;
+	};
+
+	behaviorProto.cnds = new Cnds();
+
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+
+	Acts.prototype.StartTimer = function (duration_, type_, tag_)
+	{
+		this.timers[tag_.toLowerCase()] = {
+			current: new cr.KahanAdder(),
+			total: new cr.KahanAdder(),
+			duration: duration_,
+			regular: (type_ === 1),
+			paused: false
+		};
+	};
+	
+	Acts.prototype.StopTimer = function (tag_)
+	{
+		tag_ = tag_.toLowerCase();
+		
+		if (this.timers.hasOwnProperty(tag_))
+			delete this.timers[tag_];
+	};
+	
+	Acts.prototype.PauseResumeTimer = function (tag_, state_)
+	{
+		var t = this.timers[tag_.toLowerCase()];
+		if (t)
+			t.paused = (state_ === 0);
+	};
+	
+	behaviorProto.acts = new Acts();
+
+	//////////////////////////////////////
+	// Expressions
+	function Exps() {};
+
+	Exps.prototype.CurrentTime = function (ret, tag_)
+	{
+		var t = this.timers[tag_.toLowerCase()];
+		ret.set_float(t ? t.current.sum : 0);
+	};
+	
+	Exps.prototype.TotalTime = function (ret, tag_)
+	{
+		var t = this.timers[tag_.toLowerCase()];
+		ret.set_float(t ? t.total.sum : 0);
+	};
+	
+	Exps.prototype.Duration = function (ret, tag_)
+	{
+		var t = this.timers[tag_.toLowerCase()];
+		ret.set_float(t ? t.duration : 0);
+	};
+	
+	behaviorProto.exps = new Exps();
+	
+}());
+
 // Solid
 // ECMAScript 5 strict mode
 
@@ -30436,6 +30669,7 @@ cr.getObjectRefTable = function () {
 		cr.plugins_.Sprite,
 		cr.behaviors.Bullet,
 		cr.plugins_.Text,
+		cr.behaviors.Timer,
 		cr.plugins_.TiledBg,
 		cr.behaviors.solid,
 		cr.behaviors.DragnDrop,
@@ -30447,10 +30681,15 @@ cr.getObjectRefTable = function () {
 		cr.behaviors.Bullet.prototype.acts.SetAngleOfMotion,
 		cr.system_object.prototype.exps.random,
 		cr.system_object.prototype.acts.SetLayerVisible,
-		cr.behaviors.Bullet.prototype.acts.SetSpeed,
+		cr.behaviors.Timer.prototype.acts.StartTimer,
 		cr.system_object.prototype.cnds.EveryTick,
 		cr.plugins_.Text.prototype.acts.SetText,
+		cr.system_object.prototype.exps.round,
+		cr.behaviors.Timer.prototype.exps.TotalTime,
+		cr.behaviors.Timer.prototype.cnds.OnTimer,
+		cr.behaviors.Bullet.prototype.acts.SetSpeed,
 		cr.system_object.prototype.cnds.IsGroupActive,
+		cr.system_object.prototype.cnds.CompareVar,
 		cr.plugins_.Keyboard.prototype.cnds.IsKeyDown,
 		cr.plugins_.Sprite.prototype.cnds.CompareY,
 		cr.plugins_.Sprite.prototype.acts.SetPos,
@@ -30459,24 +30698,28 @@ cr.getObjectRefTable = function () {
 		cr.plugins_.Sprite.prototype.cnds.CompareX,
 		cr.system_object.prototype.acts.AddVar,
 		cr.plugins_.Sprite.prototype.acts.Destroy,
+		cr.system_object.prototype.acts.SetVar,
 		cr.plugins_.Sprite.prototype.cnds.OnCollision,
 		cr.plugins_.Audio.prototype.acts.Play,
 		cr.plugins_.Keyboard.prototype.cnds.OnKey,
 		cr.system_object.prototype.cnds.LayerVisible,
+		cr.system_object.prototype.acts.RestartLayout,
 		cr.system_object.prototype.acts.GoToLayout,
+		cr.system_object.prototype.acts.NextPrevLayout,
 		cr.behaviors.Pin.prototype.acts.Pin,
 		cr.behaviors.DragnDrop.prototype.cnds.OnDrop,
 		cr.system_object.prototype.cnds.CompareBoolVar,
 		cr.plugins_.sliderbar.prototype.acts.SetValue,
 		cr.plugins_.sliderbar.prototype.cnds.OnChanged,
-		cr.system_object.prototype.acts.SetVar,
 		cr.plugins_.sliderbar.prototype.exps.Value,
 		cr.plugins_.sliderbar.prototype.cnds.CompareValue,
 		cr.plugins_.Text.prototype.acts.SetFontColor,
 		cr.system_object.prototype.exps.rgbex,
 		cr.plugins_.Audio.prototype.acts.SetMuted,
 		cr.plugins_.Audio.prototype.acts.AddMuteEffect,
-		cr.plugins_.Audio.prototype.acts.RemoveEffects
+		cr.plugins_.Audio.prototype.acts.RemoveEffects,
+		cr.plugins_.Sprite.prototype.acts.SetOpacity,
+		cr.plugins_.Sprite.prototype.exps.Opacity
 	];
 };
 
