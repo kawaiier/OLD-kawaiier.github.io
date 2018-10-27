@@ -24614,6 +24614,262 @@ cr.plugins_.TiledBg = function(runtime)
 
 }());
 
+// Dictionary
+// ECMAScript 5 strict mode
+
+;
+;
+
+/////////////////////////////////////
+// Plugin class
+cr.plugins_.Dictionary = function(runtime)
+{
+	this.runtime = runtime;
+};
+
+(function ()
+{
+	var pluginProto = cr.plugins_.Dictionary.prototype;
+		
+	/////////////////////////////////////
+	// Object type class
+	pluginProto.Type = function(plugin)
+	{
+		this.plugin = plugin;
+		this.runtime = plugin.runtime;
+	};
+
+	var typeProto = pluginProto.Type.prototype;
+
+	// called on startup for each object type
+	typeProto.onCreate = function()
+	{
+	};
+
+	/////////////////////////////////////
+	// Instance class
+	pluginProto.Instance = function(type)
+	{
+		this.type = type;
+		this.runtime = type.runtime;
+	};
+	
+	var instanceProto = pluginProto.Instance.prototype;
+
+	// called whenever an instance is created
+	instanceProto.onCreate = function()
+	{
+		this.dictionary = {};
+		this.cur_key = "";		// current key in for-each loop
+		this.key_count = 0;
+	};
+	
+	instanceProto.saveToJSON = function ()
+	{
+		return this.dictionary;
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+		this.dictionary = o;
+		
+		// Update the key count
+		this.key_count = 0;
+		
+		for (var p in this.dictionary)
+		{
+			if (this.dictionary.hasOwnProperty(p))
+				this.key_count++;
+		}
+	};
+	
+
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+
+	Cnds.prototype.CompareValue = function (key_, cmp_, value_)
+	{
+		return cr.do_cmp(this.dictionary[key_], cmp_, value_);
+	};
+	
+	Cnds.prototype.ForEachKey = function ()
+	{
+		var current_event = this.runtime.getCurrentEventStack().current_event;
+	
+		for (var p in this.dictionary)
+		{
+			if (this.dictionary.hasOwnProperty(p))
+			{
+				this.cur_key = p;
+				this.runtime.pushCopySol(current_event.solModifiers);
+				current_event.retrigger();
+				this.runtime.popSol(current_event.solModifiers);
+			}
+		}
+
+		this.cur_key = "";
+		return false;
+	};
+	
+	Cnds.prototype.CompareCurrentValue = function (cmp_, value_)
+	{
+		return cr.do_cmp(this.dictionary[this.cur_key], cmp_, value_);
+	};
+	
+	Cnds.prototype.HasKey = function (key_)
+	{
+		return this.dictionary.hasOwnProperty(key_);
+	};
+	
+	Cnds.prototype.IsEmpty = function ()
+	{
+		return this.key_count === 0;
+	};
+	
+	pluginProto.cnds = new Cnds();
+	
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+
+	Acts.prototype.AddKey = function (key_, value_)
+	{
+		if (!this.dictionary.hasOwnProperty(key_))
+			this.key_count++;
+		
+		this.dictionary[key_] = value_;
+	};
+	
+	Acts.prototype.SetKey = function (key_, value_)
+	{
+		if (this.dictionary.hasOwnProperty(key_))
+			this.dictionary[key_] = value_;
+	};
+	
+	Acts.prototype.DeleteKey = function (key_)
+	{
+		if (this.dictionary.hasOwnProperty(key_))
+		{
+			delete this.dictionary[key_];
+			this.key_count--;
+		}
+	};
+	
+	Acts.prototype.Clear = function ()
+	{
+		cr.wipe(this.dictionary);		// avoid garbaging
+		this.key_count = 0;
+	};
+	
+	Acts.prototype.JSONLoad = function (json_)
+	{
+		var o;
+		
+		try {
+			o = JSON.parse(json_);
+		}
+		catch(e) { return; }
+		
+		if (!o["c2dictionary"])		// presumably not a c2dictionary object
+			return;
+		
+		this.dictionary = o["data"];
+		
+		// Update the key count
+		this.key_count = 0;
+		
+		for (var p in this.dictionary)
+		{
+			if (this.dictionary.hasOwnProperty(p))
+				this.key_count++;
+		}
+	};
+	
+	Acts.prototype.JSONDownload = function (filename)
+	{
+		var a = document.createElement("a");
+		
+		if (typeof a.download === "undefined")
+		{
+			var str = 'data:text/html,' + encodeURIComponent("<p><a download='data.json' href=\"data:application/json,"
+				+ encodeURIComponent(JSON.stringify({
+						"c2dictionary": true,
+						"data": this.dictionary
+					}))
+				+ "\">Download link</a></p>");
+			window.open(str);
+		}
+		else
+		{
+			// auto download
+			var body = document.getElementsByTagName("body")[0];
+			a.textContent = filename;
+			a.href = "data:application/json," + encodeURIComponent(JSON.stringify({
+						"c2dictionary": true,
+						"data": this.dictionary
+					}));
+			a.download = filename;
+			body.appendChild(a);
+			a.click();
+			body.removeChild(a);
+		}
+	};
+	
+	pluginProto.acts = new Acts();
+	
+	//////////////////////////////////////
+	// Expressions
+	// ret.set_float, ret.set_string, ret.set_any
+	function Exps() {};
+	
+	Exps.prototype.Get = function (ret, key_)
+	{
+		if (this.dictionary.hasOwnProperty(key_))
+			ret.set_any(this.dictionary[key_]);
+		else
+			ret.set_int(0);
+	};
+
+	Exps.prototype.GetDefault = function (ret, key_, default_)
+	{
+		if (this.dictionary.hasOwnProperty(key_))
+			ret.set_any(this.dictionary[key_]);
+		else
+			ret.set_any(default_);
+	};
+	
+	Exps.prototype.KeyCount = function (ret)
+	{
+		ret.set_int(this.key_count);
+	};
+	
+	Exps.prototype.CurrentKey = function (ret)
+	{
+		ret.set_string(this.cur_key);
+	};
+	
+	Exps.prototype.CurrentValue = function (ret)
+	{
+		// Could be requested outside for-each loop
+		if (this.dictionary.hasOwnProperty(this.cur_key))
+			ret.set_any(this.dictionary[this.cur_key]);
+		else
+			ret.set_int(0);
+	};
+	
+	Exps.prototype.AsJSON = function (ret)
+	{
+		ret.set_string(JSON.stringify({
+			"c2dictionary": true,
+			"data": this.dictionary
+		}));
+	};
+	
+	pluginProto.exps = new Exps();
+
+}());
+
 // 8 Direction
 // ECMAScript 5 strict mode
 
@@ -25487,28 +25743,923 @@ cr.behaviors.bound = function(runtime)
 	
 }());
 
+// Timer
+// ECMAScript 5 strict mode
+
+;
+;
+
+/////////////////////////////////////
+// Behavior class
+cr.behaviors.Timer = function(runtime)
+{
+	this.runtime = runtime;
+};
+
+(function ()
+{
+	var behaviorProto = cr.behaviors.Timer.prototype;
+		
+	/////////////////////////////////////
+	// Behavior type class
+	behaviorProto.Type = function(behavior, objtype)
+	{
+		this.behavior = behavior;
+		this.objtype = objtype;
+		this.runtime = behavior.runtime;
+	};
+	
+	var behtypeProto = behaviorProto.Type.prototype;
+
+	behtypeProto.onCreate = function()
+	{
+	};
+
+	/////////////////////////////////////
+	// Behavior instance class
+	behaviorProto.Instance = function(type, inst)
+	{
+		this.type = type;
+		this.behavior = type.behavior;
+		this.inst = inst;				// associated object instance to modify
+		this.runtime = type.runtime;
+	};
+	
+	var behinstProto = behaviorProto.Instance.prototype;
+
+	behinstProto.onCreate = function()
+	{
+		this.timers = {};
+	};
+	
+	behinstProto.onDestroy = function ()
+	{
+		cr.wipe(this.timers);
+	};
+	
+	// called when saving the full state of the game
+	behinstProto.saveToJSON = function ()
+	{
+		var o = {};
+		
+		var p, t;
+		for (p in this.timers)
+		{
+			if (this.timers.hasOwnProperty(p))
+			{
+				t = this.timers[p];
+				
+				o[p] = {
+					"c": t.current.sum,
+					"t": t.total.sum,
+					"d": t.duration,
+					"r": t.regular,
+					"p": t.paused
+				};
+			}
+		}
+		
+		return o;
+	};
+	
+	// called when loading the full state of the game
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.timers = {};
+		
+		var p;
+		for (p in o)
+		{
+			if (o.hasOwnProperty(p))
+			{
+				this.timers[p] = {
+					current: new cr.KahanAdder(),
+					total: new cr.KahanAdder(),
+					duration: o[p]["d"],
+					regular: o[p]["r"],
+					paused: !!o[p]["p"]
+				};
+				
+				this.timers[p].current.sum = o[p]["c"];
+				this.timers[p].total.sum = o[p]["t"];
+			}
+		}
+	};
+
+	behinstProto.tick = function ()
+	{
+		var dt = this.runtime.getDt(this.inst);
+		
+		var p, t;
+		
+		for (p in this.timers)
+		{
+			if (this.timers.hasOwnProperty(p))
+			{
+				t = this.timers[p];
+				if (!t.paused)
+				{
+					t.current.add(dt);
+					t.total.add(dt);
+				}
+			}
+		}
+	};
+	
+	behinstProto.tick2 = function ()
+	{
+		// Reset any regular timers and remove any one-off timers
+		var p, t;
+		
+		for (p in this.timers)
+		{
+			if (this.timers.hasOwnProperty(p))
+			{
+				t = this.timers[p];
+				
+				if (t.current.sum >= t.duration)
+				{
+					if (t.regular)
+						t.current.sum -= t.duration;
+					else
+						delete this.timers[p];
+				}
+			}
+		}
+	};
+	
+
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+
+	Cnds.prototype.OnTimer = function (tag_)
+	{
+		tag_ = tag_.toLowerCase();
+		
+		var t = this.timers[tag_];
+		
+		if (!t)
+			return false;
+		
+		return t.current.sum >= t.duration;
+	};
+	
+	Cnds.prototype.IsTimerRunning = function (tag_)
+	{
+		return this.timers.hasOwnProperty(tag_.toLowerCase());
+	};
+	
+	Cnds.prototype.IsTimerPaused = function (tag_)
+	{
+		var t = this.timers[tag_.toLowerCase()];
+		return t && t.paused;
+	};
+
+	behaviorProto.cnds = new Cnds();
+
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+
+	Acts.prototype.StartTimer = function (duration_, type_, tag_)
+	{
+		this.timers[tag_.toLowerCase()] = {
+			current: new cr.KahanAdder(),
+			total: new cr.KahanAdder(),
+			duration: duration_,
+			regular: (type_ === 1),
+			paused: false
+		};
+	};
+	
+	Acts.prototype.StopTimer = function (tag_)
+	{
+		tag_ = tag_.toLowerCase();
+		
+		if (this.timers.hasOwnProperty(tag_))
+			delete this.timers[tag_];
+	};
+	
+	Acts.prototype.PauseResumeTimer = function (tag_, state_)
+	{
+		var t = this.timers[tag_.toLowerCase()];
+		if (t)
+			t.paused = (state_ === 0);
+	};
+	
+	behaviorProto.acts = new Acts();
+
+	//////////////////////////////////////
+	// Expressions
+	function Exps() {};
+
+	Exps.prototype.CurrentTime = function (ret, tag_)
+	{
+		var t = this.timers[tag_.toLowerCase()];
+		ret.set_float(t ? t.current.sum : 0);
+	};
+	
+	Exps.prototype.TotalTime = function (ret, tag_)
+	{
+		var t = this.timers[tag_.toLowerCase()];
+		ret.set_float(t ? t.total.sum : 0);
+	};
+	
+	Exps.prototype.Duration = function (ret, tag_)
+	{
+		var t = this.timers[tag_.toLowerCase()];
+		ret.set_float(t ? t.duration : 0);
+	};
+	
+	behaviorProto.exps = new Exps();
+	
+}());
+
+// Bullet
+// ECMAScript 5 strict mode
+
+;
+;
+
+/////////////////////////////////////
+// Behavior class
+cr.behaviors.Bullet = function(runtime)
+{
+	this.runtime = runtime;
+};
+
+(function ()
+{
+	var behaviorProto = cr.behaviors.Bullet.prototype;
+		
+	/////////////////////////////////////
+	// Behavior type class
+	behaviorProto.Type = function(behavior, objtype)
+	{
+		this.behavior = behavior;
+		this.objtype = objtype;
+		this.runtime = behavior.runtime;
+	};
+
+	var behtypeProto = behaviorProto.Type.prototype;
+
+	behtypeProto.onCreate = function()
+	{
+	};
+
+	/////////////////////////////////////
+	// Behavior instance class
+	behaviorProto.Instance = function(type, inst)
+	{
+		this.type = type;
+		this.behavior = type.behavior;
+		this.inst = inst;				// associated object instance to modify
+		this.runtime = type.runtime;
+	};
+
+	var behinstProto = behaviorProto.Instance.prototype;
+
+	behinstProto.onCreate = function()
+	{
+		var speed = this.properties[0];
+		this.acc = this.properties[1];
+		this.g = this.properties[2];
+		this.bounceOffSolid = this.properties[3];
+		this.setAngle = this.properties[4];
+		this.step = this.properties[5];
+		this.stepSize = Math.abs(Math.min(this.inst.width, this.inst.height) / 2);
+		this.stopStepping = false;
+		
+		this.dx = Math.cos(this.inst.angle) * speed;
+		this.dy = Math.sin(this.inst.angle) * speed;
+		this.lastx = this.inst.x;
+		this.lasty = this.inst.y;		
+		this.lastKnownAngle = this.inst.angle;
+		this.travelled = 0;
+		
+		this.enabled = this.properties[6];
+	};
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return {
+			"acc": this.acc,
+			"g": this.g,
+			"dx": this.dx,
+			"dy": this.dy,
+			"lx": this.lastx,
+			"ly": this.lasty,
+			"lka": this.lastKnownAngle,
+			"t": this.travelled,
+			"st": this.step,
+			"e": this.enabled
+		};
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.acc = o["acc"];
+		this.g = o["g"];
+		this.dx = o["dx"];
+		this.dy = o["dy"];
+		this.lastx = o["lx"];
+		this.lasty = o["ly"];
+		this.lastKnownAngle = o["lka"];
+		this.travelled = o["t"];
+		this.step = !!o["st"];
+		this.enabled = o["e"];
+	};
+
+	behinstProto.tick = function ()
+	{
+		if (!this.enabled)
+			return;
+			
+		var dt = this.runtime.getDt(this.inst);
+		var s, a;
+		var bounceSolid, bounceAngle;
+		
+		// Object had its angle changed: change angle of motion, providing 'Set angle' is enabled.
+		if (this.inst.angle !== this.lastKnownAngle)
+		{
+			if (this.setAngle)
+			{
+				s = cr.distanceTo(0, 0, this.dx, this.dy);
+				this.dx = Math.cos(this.inst.angle) * s;
+				this.dy = Math.sin(this.inst.angle) * s;
+			}
+			
+			this.lastKnownAngle = this.inst.angle;
+		}
+		
+		// Apply acceleration
+		var xacc = 0;
+		var yacc = 0;
+		
+		if (this.acc !== 0)
+		{
+			s = cr.distanceTo(0, 0, this.dx, this.dy);
+			
+			if (this.dx === 0 && this.dy === 0)
+				a = this.inst.angle;
+			else
+				a = cr.angleTo(0, 0, this.dx, this.dy);
+			
+			// Note acceleration is applied in polar co-ordinates, but we must separately track the
+			// X and Y components of acceleration for the position calculation below.
+			s += this.acc * dt;
+			xacc = Math.cos(a) * this.acc;
+			yacc = Math.sin(a) * this.acc;
+			
+			// Don't decelerate to negative speeds
+			if (s < 0)
+			{
+				s = 0;
+				xacc = 0;
+				yacc = 0;
+			}
+			
+			this.dx = Math.cos(a) * s;
+			this.dy = Math.sin(a) * s;
+		}
+		
+		// Apply gravity
+		if (this.g !== 0)
+		{
+			this.dy += this.g * dt;
+			yacc += this.g;
+		}
+			
+		this.lastx = this.inst.x;
+		this.lasty = this.inst.y;
+		
+		// Apply movement to the object
+		if (this.dx !== 0 || this.dy !== 0)
+		{
+			var mx = this.runtime.accelerate(this.dx, -Infinity, Infinity, xacc, dt);
+			var my = this.runtime.accelerate(this.dy, -Infinity, Infinity, yacc, dt);
+			
+			// offsets the X and Y, or does stepping if enabled
+			this.moveBy(mx, my);
+			
+			this.travelled += cr.distanceTo(this.lastx, this.lasty, this.inst.x, this.inst.y);
+			
+			if (this.setAngle && (mx !== 0 || my !== 0))			// skip if no movement (e.g. dt is 0) otherwise resets angle to right
+			{
+				this.inst.angle = cr.angleTo(0, 0, mx, my);
+				this.inst.set_bbox_changed();
+				this.lastKnownAngle = this.inst.angle;
+			}
+			
+			// Is bouncing off solid and has moved in to a solid
+			if (this.bounceOffSolid)
+			{
+				bounceSolid = this.runtime.testOverlapSolid(this.inst);
+				
+				// Has hit a solid
+				if (bounceSolid)
+				{
+					this.runtime.registerCollision(this.inst, bounceSolid);
+					
+					s = cr.distanceTo(0, 0, this.dx, this.dy);
+					bounceAngle = this.runtime.calculateSolidBounceAngle(this.inst, this.lastx, this.lasty);
+					this.dx = Math.cos(bounceAngle) * s;
+					this.dy = Math.sin(bounceAngle) * s;
+					this.inst.x += this.dx * dt;			// move out for one tick since the object can't have spent a tick in the solid
+					this.inst.y += this.dy * dt;
+					this.inst.set_bbox_changed();
+					
+					if (this.setAngle)
+					{
+						// Setting the object angle after a bounce may cause it to overlap a solid again.
+						// Make sure it's pushed out.
+						this.inst.angle = bounceAngle;
+						this.lastKnownAngle = bounceAngle;
+						this.inst.set_bbox_changed();
+					}
+					
+					// Advance the object until it is outside the solid
+					if (!this.runtime.pushOutSolid(this.inst, this.dx / s, this.dy / s, Math.max(s * 2.5 * dt, 30)))
+						this.runtime.pushOutSolidNearest(this.inst, 100);
+				}
+			}
+		}
+	};
+	
+	behinstProto.moveBy = function (mx, my)
+	{
+		var stepDist = cr.distanceTo(0, 0, mx, my);
+		
+		// Stepping disabled or moving less than the step size: just move to destination
+		if (!this.step || stepDist <= this.stepSize)
+		{
+			this.inst.x += mx;
+			this.inst.y += my;
+			this.inst.set_bbox_changed();
+			
+			// If stepping is disabled (and we're just skipping because the step distance is small), trigger 'On step' anyway.
+			// This is so if we only have a collision check in an 'On step' trigger, it continues to work as expected.
+			if (this.step)
+			{
+				this.runtime.trigger(cr.behaviors.Bullet.prototype.cnds.OnStep, this.inst);
+			}
+			
+			return;
+		}
+		
+		this.stopStepping = false;
+		
+		// Move in steps of stepSize.
+		var startX = this.inst.x;
+		var startY = this.inst.y;
+		var endX = startX + mx;
+		var endY = startY + my;
+		var a = cr.angleTo(0, 0, mx, my);
+		var stepX = Math.cos(a) * this.stepSize;
+		var stepY = Math.sin(a) * this.stepSize;
+		
+		var stepCount = Math.floor(stepDist / this.stepSize);
+		var i = 1;						// skip 0th step (is same as starting position)
+		for ( ; i <= stepCount; ++i)	// include last step
+		{
+			this.inst.x = startX + stepX * i;
+			this.inst.y = startY + stepY * i;
+			this.inst.set_bbox_changed();
+			
+			this.runtime.trigger(cr.behaviors.Bullet.prototype.cnds.OnStep, this.inst);
+			
+			if (this.inst.isDestroyed || this.stopStepping)
+				return;
+		}
+		
+		// Do one last step at the finishing position, so we don't need an extra collision event
+		this.inst.x = endX;
+		this.inst.y = endY;
+		this.inst.set_bbox_changed();
+		this.runtime.trigger(cr.behaviors.Bullet.prototype.cnds.OnStep, this.inst);
+	};
+	
+
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+
+	Cnds.prototype.CompareSpeed = function (cmp, s)
+	{
+		return cr.do_cmp(cr.distanceTo(0, 0, this.dx, this.dy), cmp, s);
+	};
+	
+	Cnds.prototype.CompareTravelled = function (cmp, d)
+	{
+		return cr.do_cmp(this.travelled, cmp, d);
+	};
+	
+	Cnds.prototype.OnStep = function ()
+	{
+		return true;
+	};
+	
+	Cnds.prototype.IsEnabled = function ()
+	{
+		return this.enabled;
+	};
+	
+	behaviorProto.cnds = new Cnds();
+
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+
+	Acts.prototype.SetSpeed = function (s)
+	{
+		var a = cr.angleTo(0, 0, this.dx, this.dy);
+		this.dx = Math.cos(a) * s;
+		this.dy = Math.sin(a) * s;
+	};
+	
+	Acts.prototype.SetAcceleration = function (a)
+	{
+		this.acc = a;
+	};
+	
+	Acts.prototype.SetGravity = function (g)
+	{
+		this.g = g;
+	};
+	
+	Acts.prototype.SetAngleOfMotion = function (a)
+	{
+		a = cr.to_radians(a);
+		var s = cr.distanceTo(0, 0, this.dx, this.dy)
+		this.dx = Math.cos(a) * s;
+		this.dy = Math.sin(a) * s;
+	};
+	
+	Acts.prototype.Bounce = function (objtype)
+	{
+		if (!objtype)
+			return;
+		
+		var otherinst = objtype.getFirstPicked(this.inst);
+		
+		if (!otherinst)
+			return;
+			
+		var dt = this.runtime.getDt(this.inst);
+		var s = cr.distanceTo(0, 0, this.dx, this.dy);
+		var bounceAngle = this.runtime.calculateSolidBounceAngle(this.inst, this.lastx, this.lasty, otherinst);
+		this.dx = Math.cos(bounceAngle) * s;
+		this.dy = Math.sin(bounceAngle) * s;
+		this.inst.x += this.dx * dt;			// move out for one tick since the object can't have spent a tick in the solid
+		this.inst.y += this.dy * dt;
+		this.inst.set_bbox_changed();
+		
+		if (this.setAngle)
+		{
+			// Setting the object angle after a bounce may cause it to overlap a solid again.
+			// Make sure it's pushed out.
+			this.inst.angle = bounceAngle;
+			this.lastKnownAngle = bounceAngle;
+			this.inst.set_bbox_changed();
+		}
+		
+		// Advance the object until it is outside the solid
+		if (s !== 0)		// prevent divide-by-zero
+		{
+			if (this.bounceOffSolid)
+			{
+				if (!this.runtime.pushOutSolid(this.inst, this.dx / s, this.dy / s, Math.max(s * 2.5 * dt, 30)))
+					this.runtime.pushOutSolidNearest(this.inst, 100);
+			}
+			else 
+			{
+				this.runtime.pushOut(this.inst, this.dx / s, this.dy / s, Math.max(s * 2.5 * dt, 30), otherinst)
+			}
+		}
+	};
+	
+	Acts.prototype.SetDistanceTravelled = function (d)
+	{
+		this.travelled = d;
+	};
+	
+	Acts.prototype.SetEnabled = function (en)
+	{
+		this.enabled = (en === 1);
+	};
+	
+	Acts.prototype.StopStepping = function ()
+	{
+		this.stopStepping = true;
+	}
+	
+	behaviorProto.acts = new Acts();
+
+	//////////////////////////////////////
+	// Expressions
+	function Exps() {};
+
+	Exps.prototype.Speed = function (ret)
+	{
+		var s = cr.distanceTo(0, 0, this.dx, this.dy);
+		
+		// Due to floating point inaccuracy is likely to return 99.9999999 when speed is set to 100.
+		// So round to nearest millionth of a pixel per second.
+		s = cr.round6dp(s);
+		
+		ret.set_float(s);
+	};
+	
+	Exps.prototype.Acceleration = function (ret)
+	{
+		ret.set_float(this.acc);
+	};
+	
+	Exps.prototype.AngleOfMotion = function (ret)
+	{
+		ret.set_float(cr.to_degrees(cr.angleTo(0, 0, this.dx, this.dy)));
+	};
+	
+	Exps.prototype.DistanceTravelled = function (ret)
+	{
+		ret.set_float(this.travelled);
+	};
+	
+	Exps.prototype.Gravity = function (ret)
+	{
+		ret.set_float(this.g);
+	};
+	
+	behaviorProto.exps = new Exps();
+	
+}());
+
+// Pin
+// ECMAScript 5 strict mode
+
+;
+;
+
+/////////////////////////////////////
+// Behavior class
+cr.behaviors.Pin = function(runtime)
+{
+	this.runtime = runtime;
+};
+
+(function ()
+{
+	var behaviorProto = cr.behaviors.Pin.prototype;
+		
+	/////////////////////////////////////
+	// Behavior type class
+	behaviorProto.Type = function(behavior, objtype)
+	{
+		this.behavior = behavior;
+		this.objtype = objtype;
+		this.runtime = behavior.runtime;
+	};
+	
+	var behtypeProto = behaviorProto.Type.prototype;
+
+	behtypeProto.onCreate = function()
+	{
+	};
+
+	/////////////////////////////////////
+	// Behavior instance class
+	behaviorProto.Instance = function(type, inst)
+	{
+		this.type = type;
+		this.behavior = type.behavior;
+		this.inst = inst;				// associated object instance to modify
+		this.runtime = type.runtime;
+	};
+	
+	var behinstProto = behaviorProto.Instance.prototype;
+
+	behinstProto.onCreate = function()
+	{
+		this.pinObject = null;
+		this.pinObjectUid = -1;		// for loading
+		this.pinAngle = 0;
+		this.pinDist = 0;
+		this.myStartAngle = 0;
+		this.theirStartAngle = 0;
+		this.lastKnownAngle = 0;
+		this.mode = 0;				// 0 = position & angle; 1 = position; 2 = angle; 3 = rope; 4 = bar
+		
+		var self = this;
+		
+		// Need to know if pinned object gets destroyed
+		if (!this.recycled)
+		{
+			this.myDestroyCallback = (function(inst) {
+													self.onInstanceDestroyed(inst);
+												});
+		}
+										
+		this.runtime.addDestroyCallback(this.myDestroyCallback);
+	};
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return {
+			"uid": this.pinObject ? this.pinObject.uid : -1,
+			"pa": this.pinAngle,
+			"pd": this.pinDist,
+			"msa": this.myStartAngle,
+			"tsa": this.theirStartAngle,
+			"lka": this.lastKnownAngle,
+			"m": this.mode
+		};
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.pinObjectUid = o["uid"];		// wait until afterLoad to look up		
+		this.pinAngle = o["pa"];
+		this.pinDist = o["pd"];
+		this.myStartAngle = o["msa"];
+		this.theirStartAngle = o["tsa"];
+		this.lastKnownAngle = o["lka"];
+		this.mode = o["m"];
+	};
+	
+	behinstProto.afterLoad = function ()
+	{
+		// Look up the pinned object UID now getObjectByUID is available
+		if (this.pinObjectUid === -1)
+			this.pinObject = null;
+		else
+		{
+			this.pinObject = this.runtime.getObjectByUID(this.pinObjectUid);
+;
+		}
+		
+		this.pinObjectUid = -1;
+	};
+	
+	behinstProto.onInstanceDestroyed = function (inst)
+	{
+		// Pinned object being destroyed
+		if (this.pinObject == inst)
+			this.pinObject = null;
+	};
+	
+	behinstProto.onDestroy = function()
+	{
+		this.pinObject = null;
+		this.runtime.removeDestroyCallback(this.myDestroyCallback);
+	};
+	
+	behinstProto.tick = function ()
+	{
+		// do work in tick2 instead, after events to get latest object position
+	};
+
+	behinstProto.tick2 = function ()
+	{
+		if (!this.pinObject)
+			return;
+			
+		// Instance angle has changed by events/something else
+		if (this.lastKnownAngle !== this.inst.angle)
+			this.myStartAngle = cr.clamp_angle(this.myStartAngle + (this.inst.angle - this.lastKnownAngle));
+			
+		var newx = this.inst.x;
+		var newy = this.inst.y;
+		
+		if (this.mode === 3 || this.mode === 4)		// rope mode or bar mode
+		{
+			var dist = cr.distanceTo(this.inst.x, this.inst.y, this.pinObject.x, this.pinObject.y);
+			
+			if ((dist > this.pinDist) || (this.mode === 4 && dist < this.pinDist))
+			{
+				var a = cr.angleTo(this.pinObject.x, this.pinObject.y, this.inst.x, this.inst.y);
+				newx = this.pinObject.x + Math.cos(a) * this.pinDist;
+				newy = this.pinObject.y + Math.sin(a) * this.pinDist;
+			}
+		}
+		else
+		{
+			newx = this.pinObject.x + Math.cos(this.pinObject.angle + this.pinAngle) * this.pinDist;
+			newy = this.pinObject.y + Math.sin(this.pinObject.angle + this.pinAngle) * this.pinDist;
+		}
+		
+		var newangle = cr.clamp_angle(this.myStartAngle + (this.pinObject.angle - this.theirStartAngle));
+		this.lastKnownAngle = newangle;
+		
+		if ((this.mode === 0 || this.mode === 1 || this.mode === 3 || this.mode === 4)
+			&& (this.inst.x !== newx || this.inst.y !== newy))
+		{
+			this.inst.x = newx;
+			this.inst.y = newy;
+			this.inst.set_bbox_changed();
+		}
+		
+		if ((this.mode === 0 || this.mode === 2) && (this.inst.angle !== newangle))
+		{
+			this.inst.angle = newangle;
+			this.inst.set_bbox_changed();
+		}
+	};
+	
+
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+
+	Cnds.prototype.IsPinned = function ()
+	{
+		return !!this.pinObject;
+	};
+	
+	behaviorProto.cnds = new Cnds();
+
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+
+	Acts.prototype.Pin = function (obj, mode_)
+	{
+		if (!obj)
+			return;
+			
+		var otherinst = obj.getFirstPicked(this.inst);
+		
+		if (!otherinst)
+			return;
+			
+		this.pinObject = otherinst;
+		this.pinAngle = cr.angleTo(otherinst.x, otherinst.y, this.inst.x, this.inst.y) - otherinst.angle;
+		this.pinDist = cr.distanceTo(otherinst.x, otherinst.y, this.inst.x, this.inst.y);
+		this.myStartAngle = this.inst.angle;
+		this.lastKnownAngle = this.inst.angle;
+		this.theirStartAngle = otherinst.angle;
+		this.mode = mode_;
+	};
+	
+	Acts.prototype.Unpin = function ()
+	{
+		this.pinObject = null;
+	};
+	
+	behaviorProto.acts = new Acts();
+
+	//////////////////////////////////////
+	// Expressions
+	function Exps() {};
+
+	Exps.prototype.PinnedUID = function (ret)
+	{
+		ret.set_int(this.pinObject ? this.pinObject.uid : -1);
+	};
+	
+	behaviorProto.exps = new Exps();
+	
+}());
+
 cr.getObjectRefTable = function () {
 	return [
 		cr.plugins_.Sprite,
 		cr.behaviors.EightDir,
 		cr.behaviors.scrollto,
 		cr.behaviors.bound,
+		cr.behaviors.Timer,
 		cr.plugins_.Text,
 		cr.plugins_.TiledBg,
-		cr.plugins_.Sprite.prototype.cnds.OnCollision,
-		cr.system_object.prototype.acts.AddVar,
+		cr.behaviors.Bullet,
+		cr.plugins_.Dictionary,
+		cr.behaviors.Pin,
+		cr.system_object.prototype.cnds.OnLayoutStart,
+		cr.plugins_.Sprite.prototype.acts.StartAnim,
+		cr.behaviors.EightDir.prototype.acts.SetEnabled,
 		cr.plugins_.Sprite.prototype.acts.SetPos,
+		cr.behaviors.Pin.prototype.acts.Pin,
+		cr.system_object.prototype.cnds.EveryTick,
+		cr.plugins_.Sprite.prototype.acts.SetTowardPosition,
+		cr.plugins_.Sprite.prototype.exps.X,
+		cr.plugins_.Sprite.prototype.exps.Y,
+		cr.plugins_.Sprite.prototype.cnds.OnCollision,
 		cr.system_object.prototype.exps.random,
 		cr.plugins_.Sprite.prototype.acts.SetSize,
 		cr.plugins_.Sprite.prototype.exps.Width,
 		cr.plugins_.Sprite.prototype.exps.Height,
-		cr.system_object.prototype.cnds.EveryTick,
+		cr.behaviors.Timer.prototype.acts.StartTimer,
+		cr.plugins_.Text.prototype.acts.SetVisible,
 		cr.plugins_.Text.prototype.acts.SetText,
-		cr.plugins_.Sprite.prototype.acts.SetTowardPosition,
-		cr.plugins_.Sprite.prototype.exps.X,
-		cr.plugins_.Sprite.prototype.exps.Y,
-		cr.system_object.prototype.cnds.OnLayoutStart,
-		cr.plugins_.Sprite.prototype.acts.StartAnim
+		cr.behaviors.Timer.prototype.cnds.OnTimer,
+		cr.system_object.prototype.acts.AddVar,
+		cr.system_object.prototype.acts.SetBoolVar,
+		cr.system_object.prototype.cnds.CompareBoolVar,
+		cr.plugins_.Sprite.prototype.acts.SetAnim,
+		cr.plugins_.Sprite.prototype.cnds.IsAnimPlaying,
+		cr.plugins_.Sprite.prototype.acts.SetOpacity,
+		cr.plugins_.Sprite.prototype.exps.Opacity,
+		cr.plugins_.Sprite.prototype.cnds.CompareOpacity,
+		cr.plugins_.Sprite.prototype.acts.SetVisible
 	];
 };
 
