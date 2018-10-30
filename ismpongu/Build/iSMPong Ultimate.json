@@ -2,6 +2,8 @@
 "companyName": "Kawaiier's",
 "productName": "iSMPong Ultimate",
 "dataUrl": "iSMPong Ultimate.data.unityweb",
+"wasmCodeUrl": "iSMPong Ultimate.wasm.code.unityweb",
+"wasmFrameworkUrl": "iSMPong Ultimate.wasm.framework.unityweb",
 "asmCodeUrl": "iSMPong Ultimate.asm.code.unityweb",
 "asmMemoryUrl": "iSMPong Ultimate.asm.memory.unityweb",
 "asmFrameworkUrl": "iSMPong Ultimate.asm.framework.unityweb",
@@ -9,6 +11,6 @@
 "graphicsAPI": ["WebGL 2.0", "WebGL 1.0"],
 "webglContextAttributes": {"preserveDrawingBuffer": false},
 "splashScreenStyle": "Dark",
-"backgroundColor": "#231F20",
+"backgroundColor": "#000000",
 "cacheControl": {"default": "must-revalidate"}
 }
