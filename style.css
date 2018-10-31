@@ -14,16 +14,16 @@ body {
 .content {
   background-color: rgba(227, 242, 253, 0.7);
   flex: 1;
-  padding: 20px;
   margin-left: 10%;
   margin-right: 10%;
+  padding: 20px;
 }
 
 .footer {
   background-color: rgba(227, 242, 253, 0.9);
-  padding: 20px;
   margin-left: 10%;
   margin-right: 10%;
+  padding: 20px;
 }
 
 h1 {
