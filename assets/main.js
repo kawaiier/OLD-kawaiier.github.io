@@ -14,6 +14,12 @@ function renderHTML(data) {
   var randnum1 = Math.floor((Math.random() * data.length) + 0);
   var randnum2 = Math.floor((Math.random() * data.length) + 0);
 
-  htmlString += data[randnum1].name + ": «" + data[randnum2].qoute + "».";
+  if (randnum1 == randnum2) {
+    htmlString += data[randnum1].name + ": «" + data[randnum2].qoute + "». <strong>БИНГО!</strong>";
+  }
+  else {
+    htmlString += data[randnum1].name + ": «" + data[randnum2].qoute + "».";
+  }
+
   quotesContainer.insertAdjacentHTML('beforeend', htmlString + "</em>");
 };
