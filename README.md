@@ -1,8 +1,8 @@
 # Sergey Manvelov | Official Website
 
-Сайт Telegram-каналов Multiplayer и Singleplayer.
+[Сайт](kawaiier.github.io) Telegram-каналов [Multiplayer](https://t.me/multiplayer) и [Singleplayer](https://t.me/singleplayered).
 
-Здесь я размещаю свои игры, созданные на Construct 3 и Godot.
+Здесь я размещаю свои игры, созданные на Unity, Construct 3 и Godot.
 
 # Обновления версий игр
 ## Neendga
