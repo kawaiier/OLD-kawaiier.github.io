@@ -465,6 +465,18 @@ self["C3_Shaders"] = {};
 
 "use strict";C3.Behaviors.bound.Exps={};
 
+"use strict";C3.Behaviors.solid=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
+
+"use strict";C3.Behaviors.solid.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
+
+"use strict";{const a=new Set;C3.Behaviors.solid.Instance=class extends C3.SDKBehaviorInstanceBase{constructor(a,b){super(a),this.SetEnabled(!0),b&&(this.SetEnabled(b[0]),this.SetTags(b[1]))}Release(){super.Release()}SetEnabled(a){this._inst.GetSavedDataMap().set("solidEnabled",!!a)}IsEnabled(){return this._inst.GetSavedDataMap().get("solidEnabled")}SetTags(a){const b=this._inst.GetSavedDataMap();if(!a.trim())return void b.delete("solidTags");let c=b.get("solidTags");c||(c=new Set,b.set("solidTags",c)),c.clear();for(const b of a.split(" "))b&&c.add(b.toLowerCase())}GetTags(){return this._inst.GetSavedDataMap().get("solidTags")||a}SaveToJson(){return{"e":this.IsEnabled()}}LoadFromJson(a){this.SetEnabled(a["e"])}GetPropertyValueByIndex(a){return a===0?this.IsEnabled():void 0}SetPropertyValueByIndex(a,b){a===0?this.SetEnabled(b):void 0}GetDebuggerProperties(){return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:"behaviors.solid.properties.enabled.name",value:this.IsEnabled(),onedit:(a)=>this.SetEnabled(a)}]}]}}}
+
+"use strict";C3.Behaviors.solid.Cnds={IsEnabled(){return this.IsEnabled()}};
+
+"use strict";C3.Behaviors.solid.Acts={SetEnabled(a){this.SetEnabled(a)}};
+
+"use strict";C3.Behaviors.solid.Exps={};
+
 "use strict";C3.Behaviors.Bullet=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
 
 "use strict";C3.Behaviors.Bullet.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
@@ -488,18 +500,6 @@ self["C3_Shaders"] = {};
 "use strict";C3.Behaviors.destroy.Acts={};
 
 "use strict";C3.Behaviors.destroy.Exps={};
-
-"use strict";C3.Behaviors.solid=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
-
-"use strict";C3.Behaviors.solid.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
-
-"use strict";{const a=new Set;C3.Behaviors.solid.Instance=class extends C3.SDKBehaviorInstanceBase{constructor(a,b){super(a),this.SetEnabled(!0),b&&(this.SetEnabled(b[0]),this.SetTags(b[1]))}Release(){super.Release()}SetEnabled(a){this._inst.GetSavedDataMap().set("solidEnabled",!!a)}IsEnabled(){return this._inst.GetSavedDataMap().get("solidEnabled")}SetTags(a){const b=this._inst.GetSavedDataMap();if(!a.trim())return void b.delete("solidTags");let c=b.get("solidTags");c||(c=new Set,b.set("solidTags",c)),c.clear();for(const b of a.split(" "))b&&c.add(b.toLowerCase())}GetTags(){return this._inst.GetSavedDataMap().get("solidTags")||a}SaveToJson(){return{"e":this.IsEnabled()}}LoadFromJson(a){this.SetEnabled(a["e"])}GetPropertyValueByIndex(a){return a===0?this.IsEnabled():void 0}SetPropertyValueByIndex(a,b){a===0?this.SetEnabled(b):void 0}GetDebuggerProperties(){return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:"behaviors.solid.properties.enabled.name",value:this.IsEnabled(),onedit:(a)=>this.SetEnabled(a)}]}]}}}
-
-"use strict";C3.Behaviors.solid.Cnds={IsEnabled(){return this.IsEnabled()}};
-
-"use strict";C3.Behaviors.solid.Acts={SetEnabled(a){this.SetEnabled(a)}};
-
-"use strict";C3.Behaviors.solid.Exps={};
 
 "use strict";C3.Behaviors.Flash=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
 
@@ -531,11 +531,11 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite,
 		C3.Behaviors.EightDir,
 		C3.Behaviors.bound,
+		C3.Behaviors.solid,
 		C3.Behaviors.Bullet,
 		C3.Behaviors.destroy,
 		C3.Plugins.Text,
 		C3.Plugins.TiledBg,
-		C3.Behaviors.solid,
 		C3.Plugins.Keyboard,
 		C3.Behaviors.Flash,
 		C3.Behaviors.Pin,
@@ -671,6 +671,8 @@ self.C3_GetObjectRefTable = function () {
 
 	self.C3_ExpressionFuncs = [
 		() => 8,
+() => 0,
+() => 1,
 () => 3,
 () => 2,
 p => {
@@ -682,7 +684,6 @@ const v0 = p._GetNode(0).GetVar();
 return () => ((Math.round(v0.GetValue())).toString() + " kilometers traveled");
 },
 () => 1.5,
-() => 1,
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
 return () => Math.floor(f0(38, 810));
@@ -766,7 +767,6 @@ p => {
 const n0 = p._GetNode(0);
 return () => (n0.ExpObject() - 2);
 },
-() => 0,
 p => {
 const v0 = p._GetNode(0).GetVar();
 return () => (1 * v0.GetValue());
