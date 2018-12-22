@@ -545,6 +545,7 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Text.Acts.SetVisible,
 		C3.Behaviors.Pin.Acts.Pin,
 		C3.Plugins.Sprite.Acts.SetVisible,
+		C3.Plugins.System.Acts.SetLayerVisible,
 		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.System.Cnds.Every,
@@ -564,7 +565,6 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Cnds.CompareY,
 		C3.Plugins.Sprite.Acts.RotateTowardPosition,
 		C3.Behaviors.EightDir.Acts.SetEnabled,
-		C3.Plugins.System.Acts.SetLayerVisible,
 		C3.Plugins.Keyboard.Cnds.OnKey,
 		C3.Plugins.System.Cnds.LayerVisible,
 		C3.Plugins.System.Acts.RestartLayout,
@@ -671,6 +671,8 @@ self.C3_GetObjectRefTable = function () {
 
 	self.C3_ExpressionFuncs = [
 		() => 8,
+() => 3,
+() => 2,
 p => {
 const v0 = p._GetNode(0).GetVar();
 return () => (("You got " + (v0.GetValue()).toString()) + " lives");
@@ -765,8 +767,6 @@ const n0 = p._GetNode(0);
 return () => (n0.ExpObject() - 2);
 },
 () => 0,
-() => 3,
-() => 2,
 p => {
 const v0 = p._GetNode(0).GetVar();
 return () => (1 * v0.GetValue());
