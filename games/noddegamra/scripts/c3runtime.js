@@ -441,6 +441,18 @@ self["C3_Shaders"] = {};
 
 "use strict";{function a(a){return a=Math.floor(a),8===a?"backspace":9===a?"tab":13===a?"enter":16===a?"shift":17===a?"control":18===a?"alt":19===a?"pause":20===a?"capslock":27===a?"esc":33===a?"pageup":34===a?"pagedown":35===a?"end":36===a?"home":37===a?"\u2190":38===a?"\u2191":39===a?"\u2192":40===a?"\u2193":45===a?"insert":46===a?"del":91===a?"left window key":92===a?"right window key":93===a?"select":96===a?"numpad 0":97===a?"numpad 1":98===a?"numpad 2":99===a?"numpad 3":100===a?"numpad 4":101===a?"numpad 5":102===a?"numpad 6":103===a?"numpad 7":104===a?"numpad 8":105===a?"numpad 9":106===a?"numpad *":107===a?"numpad +":109===a?"numpad -":110===a?"numpad .":111===a?"numpad /":112===a?"F1":113===a?"F2":114===a?"F3":115===a?"F4":116===a?"F5":117===a?"F6":118===a?"F7":119===a?"F8":120===a?"F9":121===a?"F10":122===a?"F11":123===a?"F12":144===a?"numlock":145===a?"scroll lock":186===a?";":187===a?"=":188===a?",":189===a?"-":190===a?".":191===a?"/":192===a?"'":219===a?"[":220===a?"\\":221===a?"]":222===a?"#":223===a?"`":String.fromCharCode(a)}C3.Plugins.Keyboard.Exps={LastKeyCode(){return this._triggerKey},StringFromKeyCode(b){return a(b)},TypedKey(){return this._typedKeyMap[this._triggerKey]||""}}}
 
+"use strict";C3.Plugins.AdvancedRandom=class extends C3.SDKPluginBase{constructor(a){super(a)}Release(){super.Release()}};
+
+"use strict";C3.Plugins.AdvancedRandom.Type=class extends C3.SDKTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
+
+"use strict";{class a{constructor(a){this.mode=a,this.stops=[]}AddStop(a,b){switch(this.mode){case"rgb":b=this._CreateStopRGB(b);break;case"float":b=this._CreateStopFloat(b);}for(let c=this.stops.length;c--;)if(a>this.stops[c][0])return void this.stops.splice(c+1,0,[a,b]);this.stops.push([a,b])}_CreateStopFloat(a){return[a]}_CreateStopRGB(a){const c=C3.GetRValue(a),d=C3.GetGValue(a),e=C3.GetBValue(a);return[a,c,d,e,C3.GetAValue(a)]}_SampleFloat(c,a,b){return C3.lerp(c[0],a[0],b)}_SampleRGB(c,a,b){return C3.PackRGBAEx(C3.lerp(c[1],a[1],b),C3.lerp(c[2],a[2],b),C3.lerp(c[3],a[3],b),C3.lerp(c[4],a[4],b))}Sample(c){const d=this.stops,e=d[0],f=d.length,g=d[f-1];if(c<e[0])return e[1][0];if(c>g[0])return g[1][0];let h=null,a=e;for(let b=1;b<f&&(h=a,a=d[b],!(a[0]>c));b++);switch(c=C3.clamp((c-h[0])/(a[0]-h[0]),0,1),this.mode){case"rgb":return this._SampleRGB(h[1],a[1],c);case"float":return this._SampleFloat(h[1],a[1],c);}}}C3.Plugins.AdvancedRandom.Instance=class extends C3.SDKInstanceBase{constructor(a,b){super(a),this._core=null,this._currentSeed=null,this._octaves=1,this._gradients=new Map,this._currentGradient=null;const c=b[0],d=b[1];this._CreateGradient("default","rgb"),this._AddGradientStop(0,C3.PackRGBEx(0,0,0)),this._AddGradientStop(1,C3.PackRGBEx(1,1,1)),this._runtime.AddLoadPromise(this._InitWASMModule(c,d))}async _InitWASMModule(a,b){const c=this._runtime.GetAssetManager().GetLocalUrlAsBlobUrl("noise.wasm"),d=await fetch(c),e=await WebAssembly.instantiateStreaming(d);this._core=e.instance.exports,""===a&&(a=this._RandomSeed(10)),this._UpdateSeed(a),b&&this._runtime.SetRandomNumberGeneratorCallback(()=>this._core.randomXorshiro(0,1))}_RandomSeed(a){const b=[];for(;a--;)b.push(String.fromCharCode(Math.round(Math.random()*25)+65));return b.join("")}_UpdateSeed(a){this._currentSeed=a;let b=5381;for(let c=0,d=a.length;c<d;c++)b=(b<<5)+b+a.charCodeAt(c);b>>>=0,this._core.seed(b)}_CreateGradient(b,c){const d=new a(c);this._gradients.set(b,d),this._currentGradient=d}_AddGradientStop(a,b){const c=this._currentGradient;null===c||c.AddStop(a,b)}Release(){super.Release()}}}
+
+"use strict";C3.Plugins.AdvancedRandom.Cnds={};
+
+"use strict";C3.Plugins.AdvancedRandom.Acts={SetSeed(a){this._UpdateSeed(a)},SetOctaves(a){this._octaves=C3.clamp(0|a,1,16)},CreateGradient(a,b){const c=["rgb","float"][b];this._CreateGradient(a,c)},SetGradient(a){const b=this._gradients.get(a);this._currentGradient=b||null},AddStop(a,b){this._AddGradientStop(a,b)}};
+
+"use strict";{const a=.013;C3.Plugins.AdvancedRandom.Exps={Classic2d(b,c){return this._core.classic2d(b*a,c*a,this._octaves)},Classic3d(b,c,d){return this._core.classic3d(b*a,c*a,d*a,this._octaves)},Billow2d(b,c){return this._core.billow2d(b*a,c*a,this._octaves)},Billow3d(b,c,d){return this._core.billow3d(b*a,c*a,d*a,this._octaves)},Ridged2d(b,c){return this._core.ridged2d(b*a,c*a,this._octaves)},Ridged3d(b,c,d){return this._core.ridged3d(b*a,c*a,d*a,this._octaves)},Cellular2d(b,c){return this._core.cellular2d(b*a,c*a)},Cellular3d(b,c,d){return this._core.cellular3d(b*a,c*a,d*a)},Voronoi2d(b,c){return this._core.voronoi2d(b*a,c*a)},Voronoi3d(b,c,d){return this._core.voronoi3d(b*a,c*a,d*a)},Gradient(a){const b=this._currentGradient;return null===b?0:b.Sample(a)},RandomSeed(){return this._RandomSeed(10)},Seed(){return this._currentSeed},Octaves(){return this._octaves}}}
+
 "use strict";C3.Behaviors.EightDir=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
 
 "use strict";C3.Behaviors.EightDir.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
@@ -539,32 +551,36 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Keyboard,
 		C3.Behaviors.Flash,
 		C3.Behaviors.Pin,
+		C3.Plugins.AdvancedRandom,
 		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.System.Acts.SetLayerVisible,
-		C3.Plugins.Sprite.Acts.Destroy,
-		C3.Plugins.Text.Acts.SetVisible,
-		C3.Behaviors.Pin.Acts.Pin,
 		C3.Plugins.Sprite.Acts.SetVisible,
+		C3.Plugins.Sprite.Acts.Destroy,
 		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.System.Cnds.Every,
 		C3.Plugins.System.Acts.AddVar,
-		C3.Plugins.System.Acts.CreateObject,
-		C3.Plugins.System.Exps.random,
-		C3.Plugins.Sprite.Exps.X,
-		C3.Plugins.Sprite.Exps.Y,
-		C3.Plugins.System.Cnds.CompareVar,
 		C3.Plugins.System.Cnds.IsGroupActive,
 		C3.Plugins.Sprite.Cnds.OnCreated,
+		C3.Plugins.Sprite.Acts.SetScale,
+		C3.Plugins.System.Exps.random,
 		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Behaviors.Bullet.Acts.SetSpeed,
 		C3.Behaviors.Bullet.Exps.Speed,
+		C3.Plugins.System.Acts.CreateObject,
+		C3.Plugins.System.Cnds.CompareVar,
 		C3.Plugins.Sprite.Cnds.CompareY,
+		C3.Plugins.Sprite.Exps.Y,
 		C3.Plugins.Sprite.Acts.RotateTowardPosition,
-		C3.Plugins.Sprite.Acts.SetScale,
+		C3.Plugins.Sprite.Exps.X,
+		C3.Plugins.Sprite.Acts.SetPosToObject,
 		C3.Plugins.Sprite.Cnds.OnCollision,
+		C3.Plugins.Sprite.Cnds.OnDestroyed,
 		C3.Plugins.System.Acts.SubVar,
+		C3.Plugins.System.Acts.SetGroupActive,
+		C3.Plugins.Sprite.Cnds.IsOnScreen,
+		C3.Plugins.System.Cnds.Else,
 		C3.Behaviors.EightDir.Acts.SetEnabled,
 		C3.Plugins.Keyboard.Cnds.OnKey,
 		C3.Plugins.System.Cnds.LayerVisible,
@@ -691,43 +707,39 @@ p => {
 const v0 = p._GetNode(0).GetVar();
 return () => (1 * v0.GetValue());
 },
-() => 1.5,
+() => 0.1,
+() => "Появление и поведение мусора",
+p => {
+const f0 = p._GetNode(0).GetBoundMethod();
+return () => f0(0.5, 2);
+},
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
 return () => Math.floor(f0(38, 810));
 },
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
-return () => Math.floor(f0(560, 570));
+return () => Math.floor(f0(550, 585));
 },
 p => {
 const n0 = p._GetNode(0);
-return () => n0.ExpObject();
+const v1 = p._GetNode(1).GetVar();
+return () => (n0.ExpBehavior() * v1.GetValue());
 },
-p => {
-const n0 = p._GetNode(0);
-return () => (n0.ExpObject() + 500);
-},
-() => 0.1,
+() => 1.5,
+() => "Появление и поведение ракеты",
 () => 4,
 () => 30,
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
 return () => Math.floor(f0(550, 560));
 },
-() => "Появление и поведение ракеты",
 p => {
 const n0 = p._GetNode(0);
-const v1 = p._GetNode(1).GetVar();
-return () => (n0.ExpBehavior() * v1.GetValue());
+return () => n0.ExpObject();
 },
-() => 450,
-() => 0.8,
-p => {
-const f0 = p._GetNode(0).GetBoundMethod();
-return () => f0(0.5, 2);
-},
-() => "Столкновения целого метеорита",
+() => 0.9,
+() => "Meteor Collision",
 p => {
 const n0 = p._GetNode(0);
 const f1 = p._GetNode(1).GetBoundMethod();
@@ -748,12 +760,8 @@ const n0 = p._GetNode(0);
 const f1 = p._GetNode(1).GetBoundMethod();
 return () => (n0.ExpObject() + f1((-10), 10));
 },
-p => {
-const n0 = p._GetNode(0);
-const f1 = p._GetNode(1).GetBoundMethod();
-return () => (n0.ExpObject() - f1(30, 50));
-},
-() => "Столкновения половины метеорита",
+() => "HalfMeteor Collision",
+() => "QuaterMeteor Collision",
 p => {
 const n0 = p._GetNode(0);
 return () => (n0.ExpObject() - 10);
@@ -770,25 +778,11 @@ p => {
 const n0 = p._GetNode(0);
 return () => (n0.ExpObject() + 1);
 },
-p => {
-const n0 = p._GetNode(0);
-return () => (n0.ExpObject() + 3);
-},
-p => {
-const n0 = p._GetNode(0);
-return () => (n0.ExpObject() - 2);
-},
-() => "Столкновения четверти метеорита",
 () => "Конец игры и перезапуск",
-() => 20,
-() => "КПП 1, у нас проблема. Вижу движущийся объект. Что делать?",
-() => 25,
-() => "ПУСКАЙ РАКЕТЫ!!!11",
-() => 80,
-() => "Его ничто не остановит… ВЫПУСКАЙТЕ БРЮСА!!",
 () => 100,
 () => 400,
-() => 550
+() => 550,
+() => 450
 	];
 }
 
