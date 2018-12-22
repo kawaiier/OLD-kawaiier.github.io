@@ -541,29 +541,30 @@ self.C3_GetObjectRefTable = function () {
 		C3.Behaviors.Pin,
 		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Plugins.System.Acts.SetVar,
+		C3.Plugins.System.Acts.SetLayerVisible,
 		C3.Plugins.Sprite.Acts.Destroy,
 		C3.Plugins.Text.Acts.SetVisible,
 		C3.Behaviors.Pin.Acts.Pin,
 		C3.Plugins.Sprite.Acts.SetVisible,
-		C3.Plugins.System.Acts.SetLayerVisible,
 		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.System.Cnds.Every,
+		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.System.Exps.random,
 		C3.Plugins.Sprite.Exps.X,
 		C3.Plugins.Sprite.Exps.Y,
 		C3.Plugins.System.Cnds.CompareVar,
-		C3.Plugins.System.Acts.AddVar,
+		C3.Plugins.System.Cnds.IsGroupActive,
 		C3.Plugins.Sprite.Cnds.OnCreated,
 		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Behaviors.Bullet.Acts.SetSpeed,
 		C3.Behaviors.Bullet.Exps.Speed,
+		C3.Plugins.Sprite.Cnds.CompareY,
+		C3.Plugins.Sprite.Acts.RotateTowardPosition,
 		C3.Plugins.Sprite.Acts.SetScale,
 		C3.Plugins.Sprite.Cnds.OnCollision,
 		C3.Plugins.System.Acts.SubVar,
-		C3.Plugins.Sprite.Cnds.CompareY,
-		C3.Plugins.Sprite.Acts.RotateTowardPosition,
 		C3.Behaviors.EightDir.Acts.SetEnabled,
 		C3.Plugins.Keyboard.Cnds.OnKey,
 		C3.Plugins.System.Cnds.LayerVisible,
@@ -670,7 +671,7 @@ self.C3_GetObjectRefTable = function () {
 	}
 
 	self.C3_ExpressionFuncs = [
-		() => 8,
+		() => 7,
 () => 0,
 () => 1,
 () => 3,
@@ -682,6 +683,14 @@ return () => (("You got " + (v0.GetValue()).toString()) + " lives");
 p => {
 const v0 = p._GetNode(0).GetVar();
 return () => ((Math.round(v0.GetValue())).toString() + " kilometers traveled");
+},
+p => {
+const v0 = p._GetNode(0).GetVar();
+return () => v0.GetValue();
+},
+p => {
+const v0 = p._GetNode(0).GetVar();
+return () => (1 * v0.GetValue());
 },
 () => 1.5,
 p => {
@@ -700,22 +709,26 @@ p => {
 const n0 = p._GetNode(0);
 return () => (n0.ExpObject() + 500);
 },
+() => 0.1,
 () => 4,
 () => 30,
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
 return () => Math.floor(f0(550, 560));
 },
-() => 0.2,
+() => "Появление и поведение ракеты",
 p => {
 const n0 = p._GetNode(0);
 const v1 = p._GetNode(1).GetVar();
 return () => (n0.ExpBehavior() * v1.GetValue());
 },
+() => 450,
+() => 0.8,
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
 return () => f0(0.5, 2);
 },
+() => "Столкновения целого метеорита",
 p => {
 const n0 = p._GetNode(0);
 const f1 = p._GetNode(1).GetBoundMethod();
@@ -741,8 +754,7 @@ const n0 = p._GetNode(0);
 const f1 = p._GetNode(1).GetBoundMethod();
 return () => (n0.ExpObject() - f1(30, 50));
 },
-() => 400,
-() => 0.7,
+() => "Столкновения половины метеорита",
 p => {
 const n0 = p._GetNode(0);
 return () => (n0.ExpObject() - 10);
@@ -767,10 +779,8 @@ p => {
 const n0 = p._GetNode(0);
 return () => (n0.ExpObject() - 2);
 },
-p => {
-const v0 = p._GetNode(0).GetVar();
-return () => (1 * v0.GetValue());
-},
+() => "Столкновения четверти метеорита",
+() => "Конец игры и перезапуск",
 () => 20,
 () => "КПП 1, у нас проблема. Вижу движущийся объект. Что делать?",
 () => 25,
@@ -778,8 +788,8 @@ return () => (1 * v0.GetValue());
 () => 80,
 () => "Его ничто не остановит… ВЫПУСКАЙТЕ БРЮСА!!",
 () => 100,
-() => 550,
-() => 0.1
+() => 400,
+() => 550
 	];
 }
 
