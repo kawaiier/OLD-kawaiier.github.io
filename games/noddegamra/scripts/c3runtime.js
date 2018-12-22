@@ -570,8 +570,7 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.System.Cnds.LayerVisible,
 		C3.Plugins.System.Acts.RestartLayout,
 		C3.Plugins.System.Cnds.CompareBoolVar,
-		C3.Plugins.System.Acts.SetBoolVar,
-		C3.Behaviors.Flash.Acts.Flash
+		C3.Plugins.System.Acts.SetBoolVar
 	];
 };
 
