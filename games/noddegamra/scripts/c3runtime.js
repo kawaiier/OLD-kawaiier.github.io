@@ -379,6 +379,26 @@
 "use strict";C3.JobSchedulerRuntime=class extends C3.DefendedBase{constructor(a,b){super(),this._runtime=a,this._jobPromises=new Map,this._nextJobId=0,this._inputPort=b["inputPort"],b["outputPort"].onmessage=(a)=>this._OnJobWorkerMessage(a),this._maxNumWorkers=b["maxNumWorkers"],this._jobWorkerCount=1,this._isCreatingWorker=!1,this._hadErrorCreatingWorker=!1,this._isBroken=!1,this._testOkResolve=null}async Init(){await this._TestMessageChannelWorks()}ImportScriptsToJobWorkers(a){this._isBroken||this._inputPort.postMessage({"type":"_import_scripts","scripts":a})}SendBlobToJobWorkers(a,b){this._isBroken||this._inputPort.postMessage({"type":"_send_blob","blob":a,"id":b})}SendBufferToJobWorkers(a,b){this._isBroken||this._inputPort.postMessage({"type":"_send_buffer","buffer":a,"id":b},[a])}AddJob(a,b,c,d,e){if(this._isBroken)return Promise.reject("messagechannels broken");c||(c=[]);const f=this._nextJobId++,g={"type":a,"isBroadcast":!1,"jobId":f,"params":b,"transferables":c},h=new Promise((a,b)=>{this._jobPromises.set(f,{resolve:a,progress:d,reject:b,cancelled:!1})});return e&&e.SetAction(()=>this._CancelJob(f)),this._inputPort.postMessage(g,c),this._MaybeCreateExtraWorker(),h}BroadcastJob(a,b,c){if(!this._isBroken){c||(c=[]);const d=this._nextJobId++,e={"type":a,"isBroadcast":!0,"jobId":d,"params":b,"transferables":c};this._inputPort.postMessage(e,c)}}_CancelJob(a){const b=this._jobPromises.get(a);b&&(b.cancelled=!0,b.resolve=null,b.progress=null,b.reject=null,this._inputPort.postMessage({"type":"_cancel","jobId":a}))}_OnJobWorkerMessage(a){const b=a.data,c=b["type"],d=b["jobId"];switch(c){case"result":this._OnJobResult(d,b["result"]);break;case"progress":this._OnJobProgress(d,b["progress"]);break;case"error":this._OnJobError(d,b["error"]);break;case"ready":this._OnJobWorkerReady();break;case"_testMessageChannelOk":this._OnTestMessageChannelOk();break;default:throw new Error(`unknown message from worker '${c}'`);}}_OnJobResult(a,b){const c=this._jobPromises.get(a);if(!c)throw new Error("invalid job ID");c.cancelled||c.resolve(b),this._jobPromises.delete(a)}_OnJobProgress(a,b){const c=this._jobPromises.get(a);if(!c)throw new Error("invalid job ID");!c.cancelled&&c.progress&&c.progress(b)}_OnJobError(a,b){const c=this._jobPromises.get(a);if(!c)throw new Error("invalid job ID");c.cancelled||c.reject(b),this._jobPromises.delete(a)}_OnJobWorkerReady(){this._isCreatingWorker&&(this._isCreatingWorker=!1,this._jobWorkerCount++,this._jobWorkerCount<this._maxNumWorkers?this._MaybeCreateExtraWorker():this._inputPort.postMessage({"type":"_no_more_workers"}))}async _MaybeCreateExtraWorker(){if(!(this._jobWorkerCount>=this._maxNumWorkers||this._isCreatingWorker||this._hadErrorCreatingWorker||this._jobPromises.size<=this._jobWorkerCount))try{this._isCreatingWorker=!0;const a=await this._runtime.PostComponentMessageToDOMAsync("runtime","create-job-worker");a["outputPort"].onmessage=(a)=>this._OnJobWorkerMessage(a)}catch(a){this._hadErrorCreatingWorker=!0,this._isCreatingWorker=!1,console.error(`[Construct 3] Failed to create job worker; stopping creating any more (created ${this._jobWorkerCount} so far)`,a)}}_TestMessageChannelWorks(){return this._inputPort.postMessage({"type":"_testMessageChannel"}),self.setTimeout(()=>this._CheckMessageChannelTestTimedOut(),2e3),new Promise((a)=>this._testOkResolve=a)}_OnTestMessageChannelOk(){this._testOkResolve(),this._testOkResolve=null}_CheckMessageChannelTestTimedOut(){this._testOkResolve&&(console.warn("MessageChannel determined to be broken. Job scheduler disabled."),this._isBroken=!0,this._testOkResolve(),this._testOkResolve=null)}};
 
 self["C3_Shaders"] = {};
+self["C3_Shaders"]["lighten"] = {
+	src: "varying mediump vec2 vTex;\nuniform lowp sampler2D samplerFront;\nuniform mediump vec2 srcStart;\nuniform mediump vec2 srcEnd;\nuniform lowp sampler2D samplerBack;\nuniform mediump vec2 destStart;\nuniform mediump vec2 destEnd;\nvoid main(void)\n{\nlowp vec4 front = texture2D(samplerFront, vTex);\nfront.rgb /= front.a;\nmediump vec2 tex = (vTex - srcStart) / (srcEnd - srcStart);\nlowp vec4 back = texture2D(samplerBack, mix(destStart, destEnd, tex));\nback.rgb /= back.a;\nfront.rgb = max(front.rgb, back.rgb) * front.a;\ngl_FragColor = front * back.a;\n}",
+	extendBoxHorizontal: 0,
+	extendBoxVertical: 0,
+	crossSampling: false,
+	mustPreDraw: false,
+	preservesOpaqueness: false,
+	animated: false,
+	parameters: []
+};
+self["C3_Shaders"]["softlight"] = {
+	src: "precision mediump float;\nvarying mediump vec2 vTex;\nuniform lowp sampler2D samplerFront;\nuniform mediump vec2 srcStart;\nuniform mediump vec2 srcEnd;\nuniform lowp sampler2D samplerBack;\nuniform mediump vec2 destStart;\nuniform mediump vec2 destEnd;\nvoid main(void)\n{\nlowp vec4 front = texture2D(samplerFront, vTex);\nfront.rgb /= front.a;\nmediump vec2 tex = (vTex - srcStart) / (srcEnd - srcStart);\nlowp vec4 back = texture2D(samplerBack, mix(destStart, destEnd, tex));\nback.rgb /= back.a;\nfront.r = ((front.r < 0.5) ? (2.0 * back.r * front.r + back.r * back.r * (1.0 - 2.0 * front.r)) : (sqrt(back.r) * (2.0 * front.r - 1.0) + 2.0 * back.r * (1.0 - front.r)));\nfront.g = ((front.g < 0.5) ? (2.0 * back.g * front.g + back.g * back.g * (1.0 - 2.0 * front.g)) : (sqrt(back.g) * (2.0 * front.g - 1.0) + 2.0 * back.g * (1.0 - front.g)));\nfront.b = ((front.b < 0.5) ? (2.0 * back.b * front.b + back.b * back.b * (1.0 - 2.0 * front.b)) : (sqrt(back.b) * (2.0 * front.b - 1.0) + 2.0 * back.b * (1.0 - front.b)));\nfront.rgb *= front.a;\ngl_FragColor = front * back.a;\n}",
+	extendBoxHorizontal: 0,
+	extendBoxVertical: 0,
+	crossSampling: false,
+	mustPreDraw: false,
+	preservesOpaqueness: false,
+	animated: false,
+	parameters: []
+};
 
 
 "use strict";{function a(c,a){const b=c[1],d=a[1];if("number"==typeof b&&"number"==typeof d)return b-d;else{const a=""+b,c=""+d;return a<c?-1:a>c?1:0}}let b=null,c="",d="",e=[],f="",g="",h="";const i=C3.New(C3.ArrayStack);C3.Plugins.System=class extends C3.SDKPluginBase{constructor(a){super(a),this._loopStack=this._runtime.GetEventSheetManager().GetLoopStack(),this._imagesLoadingTotal=0,this._imagesLoadingComplete=0}Release(){super.Release()}UpdateRender(){this._runtime.UpdateRender()}Trigger(a){this._runtime.Trigger(a,null)}GetRegex(a,e){return b&&a===c&&e===d||(b=new RegExp(a,e),c=a,d=e),b.lastIndex=0,b}GetRegexMatches(a,b,c){if(a===f&&b===g&&c===h)return e;const d=this.GetRegex(b,c);return e=a.match(d),f=a,g=b,h=c,e}async _LoadTexturesForObjectClasses(a,b){if(b.length){this._imagesLoadingTotal+=b.length;const c=[];for(const d of b)c.push(a.MaybeLoadTexturesFor(d));await C3.PromiseAllWithProgress(c,()=>{this._imagesLoadingComplete++}),this._imagesLoadingComplete++,this._imagesLoadingComplete===this._imagesLoadingTotal&&(this._runtime.Trigger(C3.Plugins.System.Cnds.OnImageLoadingComplete,null),this._imagesLoadingComplete=0,this._imagesLoadingTotal=0)}}_UnloadTexturesForObjectClasses(a,b){for(const c of b)0===c.GetInstanceCount()&&a.MaybeUnloadTexturesFor(c)}_GetForEachStack(){return i}_Repeat(a){const b=this._runtime.GetEventSheetManager(),c=b.GetEventStack(),d=c.GetCurrentStackFrame(),e=d.GetCurrentEvent(),f=e.GetSolModifiers(),g=d.IsSolModifierAfterCnds(),h=c.Push(e),i=b.GetLoopStack(),j=i.Push();if(j.SetEnd(a),g)for(let c=0;c<a&&!j.IsStopped();++c)b.PushCopySol(f),j.SetIndex(c),e.Retrigger(d,h),b.PopSol(f);else for(let b=0;b<a&&!j.IsStopped();++b)j.SetIndex(b),e.Retrigger(d,h);return c.Pop(),i.Pop(),!1}*_DebugRepeat(a){const b=this._runtime.GetEventSheetManager(),c=b.GetEventStack(),d=c.GetCurrentStackFrame(),e=d.GetCurrentEvent(),f=e.GetSolModifiers(),g=d.IsSolModifierAfterCnds(),h=c.Push(e),i=b.GetLoopStack(),j=i.Push();if(j.SetEnd(a),g)for(let c=0;c<a&&!j.IsStopped();++c)b.PushCopySol(f),j.SetIndex(c),yield*e.DebugRetrigger(d,h),b.PopSol(f);else for(let b=0;b<a&&!j.IsStopped();++b)j.SetIndex(b),yield*e.DebugRetrigger(d,h);return c.Pop(),i.Pop(),!1}_While(){const a=this._runtime.GetEventSheetManager(),b=a.GetEventStack(),c=b.GetCurrentStackFrame(),d=c.GetCurrentEvent(),e=d.GetSolModifiers(),f=c.IsSolModifierAfterCnds(),g=b.Push(d),h=a.GetLoopStack(),j=h.Push();if(f)for(let b=0;!j.IsStopped();++b)a.PushCopySol(e),j.SetIndex(b),d.Retrigger(c,g)||j.Stop(),a.PopSol(e);else for(let a=0;!j.IsStopped();++a)j.SetIndex(a),d.Retrigger(c,g)||j.Stop();return b.Pop(),h.Pop(),!1}*_DebugWhile(){const a=this._runtime.GetEventSheetManager(),b=a.GetEventStack(),c=b.GetCurrentStackFrame(),d=c.GetCurrentEvent(),e=d.GetSolModifiers(),f=c.IsSolModifierAfterCnds(),g=b.Push(d),h=a.GetLoopStack(),j=h.Push();if(f)for(let b=0;!j.IsStopped();++b){a.PushCopySol(e),j.SetIndex(b);const f=yield*d.DebugRetrigger(c,g);f||j.Stop(),a.PopSol(e)}else for(let a=0;!j.IsStopped();++a){j.SetIndex(a);const b=yield*d.DebugRetrigger(c,g);b||j.Stop()}return b.Pop(),h.Pop(),!1}_For(a,b,c){const d=this._runtime.GetEventSheetManager(),e=d.GetEventStack(),f=e.GetCurrentStackFrame(),g=f.GetCurrentEvent(),h=g.GetSolModifiers(),i=f.IsSolModifierAfterCnds(),j=e.Push(g),k=d.GetLoopStack(),l=k.Push();if(l.SetName(a),l.SetEnd(c),c<b){if(i)for(let a=b;a>=c&&!l.IsStopped();--a)d.PushCopySol(h),l.SetIndex(a),g.Retrigger(f,j),d.PopSol(h);else for(let a=b;a>=c&&!l.IsStopped();--a)l.SetIndex(a),g.Retrigger(f,j);}else if(i)for(let a=b;a<=c&&!l.IsStopped();++a)d.PushCopySol(h),l.SetIndex(a),g.Retrigger(f,j),d.PopSol(h);else for(let a=b;a<=c&&!l.IsStopped();++a)l.SetIndex(a),g.Retrigger(f,j);return e.Pop(),k.Pop(),!1}*_DebugFor(a,b,c){const d=this._runtime.GetEventSheetManager(),e=d.GetEventStack(),f=e.GetCurrentStackFrame(),g=f.GetCurrentEvent(),h=g.GetSolModifiers(),i=f.IsSolModifierAfterCnds(),j=e.Push(g),k=d.GetLoopStack(),l=k.Push();if(l.SetName(a),l.SetEnd(c),c<b){if(i)for(let a=b;a>=c&&!l.IsStopped();--a)d.PushCopySol(h),l.SetIndex(a),yield*g.DebugRetrigger(f,j),d.PopSol(h);else for(let a=b;a>=c&&!l.IsStopped();--a)l.SetIndex(a),yield*g.DebugRetrigger(f,j);}else if(i)for(let a=b;a<=c&&!l.IsStopped();++a)d.PushCopySol(h),l.SetIndex(a),yield*g.DebugRetrigger(f,j),d.PopSol(h);else for(let a=b;a<=c&&!l.IsStopped();++a)l.SetIndex(a),yield*g.DebugRetrigger(f,j);return e.Pop(),k.Pop(),!1}_ForEach(a){const b=this._runtime.GetEventSheetManager(),c=b.GetEventStack(),d=c.GetCurrentStackFrame(),e=d.GetCurrentEvent(),f=e.GetSolModifiers(),g=d.IsSolModifierAfterCnds(),h=c.Push(e),j=b.GetLoopStack(),k=j.Push(),l=a.IsInContainer(),m=a.GetCurrentSol(),n=i.Push();if(C3.shallowAssignArray(n,m.GetInstances()),k.SetEnd(n.length),g)for(let c=0,g=n.length;c<g&&!k.IsStopped();++c){b.PushCopySol(f);const g=n[c];a.GetCurrentSol().SetSinglePicked(g),l&&g.SetSiblingsSinglePicked(),k.SetIndex(c),e.Retrigger(d,h),b.PopSol(f)}else{m._SetSelectAll(!1);const a=m._GetOwnInstances();C3.clearArray(a),a.push(null);for(let b=0,c=n.length;b<c&&!k.IsStopped();++b){const c=n[b];a[0]=c,l&&c.SetSiblingsSinglePicked(),k.SetIndex(b),e.Retrigger(d,h)}}return c.Pop(),j.Pop(),C3.clearArray(n),i.Pop(),!1}*_DebugForEach(a){const b=this._runtime.GetEventSheetManager(),c=b.GetEventStack(),d=c.GetCurrentStackFrame(),e=d.GetCurrentEvent(),f=e.GetSolModifiers(),g=d.IsSolModifierAfterCnds(),h=c.Push(e),j=b.GetLoopStack(),k=j.Push(),l=a.IsInContainer(),m=a.GetCurrentSol(),n=i.Push();if(C3.shallowAssignArray(n,m.GetInstances()),k.SetEnd(n.length),g)for(let c=0,g=n.length;c<g&&!k.IsStopped();++c){b.PushCopySol(f);const g=n[c];a.GetCurrentSol().SetSinglePicked(g),l&&g.SetSiblingsSinglePicked(),k.SetIndex(c),yield*e.DebugRetrigger(d,h),b.PopSol(f)}else{m._SetSelectAll(!1);const a=m._GetOwnInstances();C3.clearArray(a),a.push(null);for(let b=0,c=n.length;b<c&&!k.IsStopped();++b){const c=n[b];a[0]=c,l&&c.SetSiblingsSinglePicked(),k.SetIndex(b),yield*e.DebugRetrigger(d,h)}}return c.Pop(),j.Pop(),C3.clearArray(n),i.Pop(),!1}_ForEachOrdered(b,c){const d=this._runtime.GetEventSheetManager(),e=d.GetEventStack(),f=d.GetCurrentCondition(),g=e.GetCurrentStackFrame(),h=g.GetCurrentEvent(),j=h.GetSolModifiers(),k=g.IsSolModifierAfterCnds(),l=e.Push(h),m=d.GetLoopStack(),n=m.Push(),o=b.IsInContainer(),p=b.GetCurrentSol(),q=i.Push();C3.clearArray(q);const r=p.GetInstances();n.SetEnd(r.length);for(let a=0,d=r.length;a<d;++a)q.push([r[a],f.ReevaluateParameter(1,a)]);if(q.sort(a),1===c&&q.reverse(),k)for(let a=0,c=q.length;a<c&&!n.IsStopped();++a){d.PushCopySol(j);const c=q[a][0];b.GetCurrentSol().SetSinglePicked(c),o&&c.SetSiblingsSinglePicked(),n.SetIndex(a),h.Retrigger(g,l),d.PopSol(j)}else{p._SetSelectAll(!1);const a=p._GetOwnInstances();C3.clearArray(a),a.push(null);for(let b=0,c=q.length;b<c&&!n.IsStopped();++b){const c=q[b][0];a[0]=c,o&&c.SetSiblingsSinglePicked(),n.SetIndex(b),h.Retrigger(g,l)}}return e.Pop(),m.Pop(),C3.clearArray(q),i.Pop(),!1}*_DebugForEachOrdered(b,c){const d=this._runtime.GetEventSheetManager(),e=d.GetEventStack(),f=d.GetCurrentCondition(),g=e.GetCurrentStackFrame(),h=g.GetCurrentEvent(),j=h.GetSolModifiers(),k=g.IsSolModifierAfterCnds(),l=e.Push(h),m=d.GetLoopStack(),n=m.Push(),o=b.IsInContainer(),p=b.GetCurrentSol(),q=i.Push();C3.clearArray(q);const r=p.GetInstances();n.SetEnd(r.length);for(let a=0,d=r.length;a<d;++a)q.push([r[a],f.ReevaluateParameter(1,a)]);if(q.sort(a),1===c&&q.reverse(),k)for(let a=0,c=q.length;a<c&&!n.IsStopped();++a){d.PushCopySol(j);const c=q[a][0];b.GetCurrentSol().SetSinglePicked(c),o&&c.SetSiblingsSinglePicked(),n.SetIndex(a),yield*h.DebugRetrigger(g,l),d.PopSol(j)}else{p._SetSelectAll(!1);const a=p._GetOwnInstances();C3.clearArray(a),a.push(null);for(let b=0,c=q.length;b<c&&!n.IsStopped();++b){const c=q[b][0];a[0]=c,o&&c.SetSiblingsSinglePicked(),n.SetIndex(b),yield*h.DebugRetrigger(g,l)}}return e.Pop(),m.Pop(),C3.clearArray(q),i.Pop(),!1}}}
@@ -513,18 +533,6 @@ self["C3_Shaders"] = {};
 
 "use strict";C3.Behaviors.destroy.Exps={};
 
-"use strict";C3.Behaviors.Flash=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
-
-"use strict";C3.Behaviors.Flash.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
-
-"use strict";C3.Behaviors.Flash.Instance=class extends C3.SDKBehaviorInstanceBase{constructor(a){super(a),this._onTime=0,this._offTime=0,this._stage=0,this._stageTimeLeft=0,this._timeLeft=0,this._StartTicking()}Release(){super.Release()}SaveToJson(){return{"on":this._onTime,"off":this._offTime,"s":this._stage,"stl":this._stageTimeLeft,"tl":this._timeLeft}}LoadFromJson(a){this._onTime=a["on"],this._offTime=a["off"],this._stage=a["s"],this._stageTimeLeft=a["stl"],this._timeLeft=null===a["tl"]?1/0:a["tl"]}Tick(){if(!(0>=this._timeLeft)){const a=this._runtime.GetDt(this._inst);return this._timeLeft-=a,0>=this._timeLeft?(this._timeLeft=0,this._inst.GetWorldInfo().SetVisible(!0),this._runtime.UpdateRender(),this.DebugTrigger(C3.Behaviors.Flash.Cnds.OnFlashEnded)):void(this._stageTimeLeft-=a,0>=this._stageTimeLeft&&(0===this._stage?(this._inst.GetWorldInfo().SetVisible(!1),this._stage=1,this._stageTimeLeft+=this._offTime):(this._inst.GetWorldInfo().SetVisible(!0),this._stage=0,this._stageTimeLeft+=this._onTime),this._runtime.UpdateRender()))}}GetDebuggerProperties(){return[{title:"$"+this.GetBehaviorType().GetName(),properties:[{name:"behaviors.flash.debugger.on-time",value:this._onTime,onedit:(a)=>this._onTime=a},{name:"behaviors.flash.debugger.off-time",value:this._offTime,onedit:(a)=>this._offTime=a},{name:"behaviors.flash.debugger.is-flashing",value:0<this._timeLeft},{name:"behaviors.flash.debugger.time-left",value:this._timeLeft}]}]}};
-
-"use strict";C3.Behaviors.Flash.Cnds={IsFlashing(){return 0<this._timeLeft},OnFlashEnded(){return!0}};
-
-"use strict";C3.Behaviors.Flash.Acts={Flash(a,b,c){this._onTime=a,this._offTime=b,this._stage=1,this._stageTimeLeft=b,this._timeLeft=c,this._inst.GetWorldInfo().SetVisible(!1),this._runtime.UpdateRender()},StopFlashing(){this._timeLeft=0,this._inst.GetWorldInfo().SetVisible(!0),this._runtime.UpdateRender()}};
-
-"use strict";C3.Behaviors.Flash.Exps={};
-
 "use strict";C3.Behaviors.Pin=class extends C3.SDKBehaviorBase{constructor(a){super(a)}Release(){super.Release()}};
 
 "use strict";C3.Behaviors.Pin.Type=class extends C3.SDKBehaviorTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}};
@@ -549,7 +557,6 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Text,
 		C3.Plugins.TiledBg,
 		C3.Plugins.Keyboard,
-		C3.Behaviors.Flash,
 		C3.Behaviors.Pin,
 		C3.Plugins.AdvancedRandom,
 		C3.Plugins.System.Cnds.OnLayoutStart,
@@ -561,6 +568,7 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.System.Cnds.Every,
 		C3.Plugins.System.Acts.AddVar,
+		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.System.Cnds.IsGroupActive,
 		C3.Plugins.Sprite.Cnds.OnCreated,
 		C3.Plugins.Sprite.Acts.SetScale,
@@ -568,7 +576,6 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Behaviors.Bullet.Acts.SetSpeed,
 		C3.Behaviors.Bullet.Exps.Speed,
-		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.System.Cnds.CompareVar,
 		C3.Plugins.Sprite.Cnds.CompareY,
 		C3.Plugins.Sprite.Exps.Y,
@@ -586,7 +593,9 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.System.Cnds.LayerVisible,
 		C3.Plugins.System.Acts.RestartLayout,
 		C3.Plugins.System.Cnds.CompareBoolVar,
-		C3.Plugins.System.Acts.SetBoolVar
+		C3.Plugins.System.Acts.SetBoolVar,
+		C3.Plugins.Sprite.Acts.SetOpacity,
+		C3.Plugins.Sprite.Acts.SetSize
 	];
 };
 
@@ -715,7 +724,7 @@ return () => f0(0.5, 2);
 },
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
-return () => Math.floor(f0(38, 810));
+return () => Math.floor(f0(5, 840));
 },
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
@@ -730,6 +739,10 @@ return () => (n0.ExpBehavior() * v1.GetValue());
 () => "Появление и поведение ракеты",
 () => 4,
 () => 30,
+p => {
+const f0 = p._GetNode(0).GetBoundMethod();
+return () => Math.floor(f0(38, 810));
+},
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
 return () => Math.floor(f0(550, 560));
@@ -782,7 +795,23 @@ return () => (n0.ExpObject() + 1);
 () => 100,
 () => 400,
 () => 550,
-() => 450
+() => 450,
+p => {
+const f0 = p._GetNode(0).GetBoundMethod();
+return () => f0(1, 10);
+},
+p => {
+const f0 = p._GetNode(0).GetBoundMethod();
+return () => f0(5, 100);
+},
+p => {
+const f0 = p._GetNode(0).GetBoundMethod();
+return () => f0(0, 800);
+},
+p => {
+const f0 = p._GetNode(0).GetBoundMethod();
+return () => f0(670, 700);
+}
 	];
 }
 
