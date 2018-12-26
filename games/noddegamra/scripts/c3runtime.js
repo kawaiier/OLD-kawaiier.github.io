@@ -563,10 +563,12 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.System.Acts.SetVar,
 		C3.Plugins.System.Acts.SetLayerVisible,
 		C3.Plugins.Sprite.Acts.SetVisible,
+		C3.Plugins.System.Acts.SetBoolVar,
 		C3.Plugins.Sprite.Acts.Destroy,
 		C3.Plugins.System.Cnds.EveryTick,
 		C3.Plugins.Text.Acts.SetText,
 		C3.Plugins.System.Cnds.Every,
+		C3.Plugins.System.Cnds.CompareBoolVar,
 		C3.Plugins.System.Acts.AddVar,
 		C3.Plugins.System.Acts.CreateObject,
 		C3.Plugins.System.Cnds.IsGroupActive,
@@ -589,11 +591,10 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Cnds.IsOnScreen,
 		C3.Plugins.System.Cnds.Else,
 		C3.Behaviors.EightDir.Acts.SetEnabled,
+		C3.Plugins.TiledBg.Acts.MoveToLayer,
 		C3.Plugins.Keyboard.Cnds.OnKey,
 		C3.Plugins.System.Cnds.LayerVisible,
 		C3.Plugins.System.Acts.RestartLayout,
-		C3.Plugins.System.Cnds.CompareBoolVar,
-		C3.Plugins.System.Acts.SetBoolVar,
 		C3.Plugins.Sprite.Acts.SetOpacity,
 		C3.Plugins.Sprite.Acts.SetSize
 	];
@@ -695,9 +696,10 @@ self.C3_GetObjectRefTable = function () {
 	}
 
 	self.C3_ExpressionFuncs = [
-		() => 7,
+		() => 70,
 () => 0,
 () => 1,
+() => 4,
 () => 3,
 () => 2,
 p => {
@@ -711,6 +713,11 @@ return () => ((Math.round(v0.GetValue())).toString() + " kilometers traveled");
 p => {
 const v0 = p._GetNode(0).GetVar();
 return () => v0.GetValue();
+},
+p => {
+const v0 = p._GetNode(0).GetVar();
+const v1 = p._GetNode(1).GetVar();
+return () => and("Distance to Earth ", (v0.GetValue() - v1.GetValue()));
 },
 p => {
 const v0 = p._GetNode(0).GetVar();
@@ -737,7 +744,6 @@ return () => (n0.ExpBehavior() * v1.GetValue());
 },
 () => 1.5,
 () => "Появление и поведение ракеты",
-() => 4,
 () => 30,
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
@@ -795,6 +801,7 @@ return () => (n0.ExpObject() + 1);
 () => 100,
 () => 400,
 () => 550,
+() => 0.7,
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
 return () => f0(1, 10);
@@ -810,6 +817,10 @@ return () => f0(0, 800);
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
 return () => f0(670, 700);
+},
+p => {
+const n0 = p._GetNode(0);
+return () => (n0.ExpObject() - 5);
 }
 	];
 }
