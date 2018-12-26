@@ -696,7 +696,7 @@ self.C3_GetObjectRefTable = function () {
 	}
 
 	self.C3_ExpressionFuncs = [
-		() => 70,
+		() => 7,
 () => 0,
 () => 1,
 () => 4,
