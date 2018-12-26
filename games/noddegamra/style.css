@@ -32,3 +32,8 @@ html, body, canvas {
 	font-size: 1.2em;
 }
 
+@font-face {
+	font-family: 'ConcertOne-Regular';
+	src: url('fonts/concertone-regular.ttf') format('truetype');
+}
+
