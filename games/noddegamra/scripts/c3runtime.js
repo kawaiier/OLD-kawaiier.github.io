@@ -642,6 +642,8 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Acts.SetPos,
 		C3.Behaviors.Bullet.Acts.SetSpeed,
 		C3.Behaviors.Bullet.Exps.Speed,
+		C3.Plugins.Sprite.Acts.SetAnimFrame,
+		C3.Plugins.Sprite.Acts.SetAngle,
 		C3.Plugins.System.Cnds.CompareVar,
 		C3.Behaviors.Timer.Acts.StartTimer,
 		C3.Plugins.Sprite.Cnds.CompareY,
@@ -783,17 +785,13 @@ return () => ((Math.round((v0.GetValue() - v1.GetValue()))).toString() + " kilom
 },
 p => {
 const v0 = p._GetNode(0).GetVar();
-return () => v0.GetValue();
-},
-p => {
-const v0 = p._GetNode(0).GetVar();
 return () => (1 * v0.GetValue());
 },
 () => 0.1,
 () => "Появление и поведение мусора",
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
-return () => f0(0.5, 2);
+return () => f0(0.5, 1.5);
 },
 p => {
 const f0 = p._GetNode(0).GetBoundMethod();
@@ -807,6 +805,14 @@ p => {
 const n0 = p._GetNode(0);
 const v1 = p._GetNode(1).GetVar();
 return () => (n0.ExpBehavior() * v1.GetValue());
+},
+p => {
+const f0 = p._GetNode(0).GetBoundMethod();
+return () => f0(0, 2);
+},
+p => {
+const f0 = p._GetNode(0).GetBoundMethod();
+return () => f0(0, 360);
 },
 () => 1.5,
 () => "Появление и поведение ракеты",
@@ -895,6 +901,10 @@ return () => f0(670, 700);
 p => {
 const n0 = p._GetNode(0);
 return () => (n0.ExpObject() - 5);
+},
+p => {
+const v0 = p._GetNode(0).GetVar();
+return () => v0.GetValue();
 },
 () => "Count Lives",
 () => 6,
