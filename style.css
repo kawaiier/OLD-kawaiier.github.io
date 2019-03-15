@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro|Press+Start+2P');
+
 html {
   height: 100%;
 }
@@ -5,6 +7,7 @@ html {
 body {
   background-image: url(assets/bckg.png);
   background-size: cover;
+  background-attachment: fixed;
   display: flex;
   flex-direction: column;
   font-family: 'Open Sans', sans-serif;
@@ -17,7 +20,7 @@ body {
   flex: 1;
   margin-left: 10%;
   margin-right: 10%;
-  padding: 20px;
+  padding: 25px 100px 70px 100px;
 }
 
 .footer {
@@ -29,11 +32,15 @@ body {
 }
 
 h1 {
-  color: rgb(25, 25, 112);
-  font-size: 40px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 30px;
+  background: -webkit-linear-gradient(#191950, #191970);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 p {
+  font-family: 'Source Sans Pro', sans-serif;
   font-size: 14pt;
 }
 
@@ -56,8 +63,11 @@ a:hover {
 }
 
 .lead {
-  font-size: 16pt;
-  margin: 10px;
+  font-size: 20px;
+  margin: 5px;
+  border: 5px solid #112566;
+  padding:3%;
+  background-color: rgba(59, 125, 184, 0.50);
 }
 
 .links {
