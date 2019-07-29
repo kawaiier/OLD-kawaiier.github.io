@@ -533,7 +533,7 @@ self["C3_Shaders"] = {};
 
 "use strict";{function a(){return b.GetSingleGlobalInstance().GetSdkInstance()}C3.Plugins.Keyboard.Type=class extends C3.SDKTypeBase{constructor(a){super(a)}Release(){super.Release()}OnCreate(){}GetScriptInterfaceClass(){return IKeyboardObjectType}};let b=null;self.IKeyboardObjectType=class extends IObjectClass{constructor(a){super(a),b=a,a.GetRuntime()._GetCommonScriptInterfaces().keyboard=this}isKeyDown(b){const c=a();if("string"==typeof b)return c.IsKeyDown(b);if("number"==typeof b)return c.IsKeyCodeDown(b);throw new TypeError("expected string or number")}}}
 
-"use strict";C3.Plugins.Keyboard.Instance=class extends C3.SDKInstanceBase{constructor(a){super(a),this._keysDownByKey=new Set,this._keysDownByCode=new Set,this._triggerCode=0,this._triggerKey="";const b=this.GetRuntime().Dispatcher();this._disposables=new C3.CompositeDisposable(C3.Disposable.From(b,"keydown",(a)=>this._OnKeyDown(a.data)),C3.Disposable.From(b,"keyup",(a)=>this._OnKeyUp(a.data)),C3.Disposable.From(b,"window-blur",()=>this._OnWindowBlur()))}Release(){super.Release()}async _OnKeyDown(a){const b=a["key"],c=a["which"];this._keysDownByKey.has(b)||(this._keysDownByKey.add(b),this._keysDownByCode.add(c),this._triggerCode=c,this._triggerKey=b,await this.TriggerAsync(C3.Plugins.Keyboard.Cnds.OnAnyKey),await this.TriggerAsync(C3.Plugins.Keyboard.Cnds.OnKey),await this.TriggerAsync(C3.Plugins.Keyboard.Cnds.OnKeyCode))}async _OnKeyUp(a){const b=a["key"],c=a["which"];this._keysDownByKey.delete(b),this._keysDownByCode.delete(c),this._triggerCode=c,this._triggerKey=b,await this.TriggerAsync(C3.Plugins.Keyboard.Cnds.OnAnyKeyReleased),await this.TriggerAsync(C3.Plugins.Keyboard.Cnds.OnKeyReleased),await this.TriggerAsync(C3.Plugins.Keyboard.Cnds.OnKeyCodeReleased)}async _OnWindowBlur(){for(const a of this._keysDownByCode)this._keysDownByCode.delete(a),this._triggerCode=a,await this.TriggerAsync(C3.Plugins.Keyboard.Cnds.OnAnyKeyReleased),await this.TriggerAsync(C3.Plugins.Keyboard.Cnds.OnKeyReleased),await this.TriggerAsync(C3.Plugins.Keyboard.Cnds.OnKeyCodeReleased)}IsKeyDown(a){return this._keysDownByKey.has(a)}IsKeyCodeDown(a){return this._keysDownByCode.has(a)}SaveToJson(){return{"tk":this._triggerCode,"tkk":this._triggerKey}}LoadFromJson(a){this._triggerCode=a["tk"],a.hasOwnProperty("tkk")&&(this._triggerKey=a["tkk"])}GetDebuggerProperties(){return[{title:"plugins.keyboard.name",properties:[{name:"plugins.keyboard.debugger.last-key-code",value:this._triggerCode},{name:"plugins.keyboard.debugger.last-key-string",value:C3.Plugins.Keyboard.Exps.StringFromKeyCode(this._triggerCode)},{name:"plugins.keyboard.debugger.last-typed-key",value:this._triggerKey}]}]}};
+"use strict";C3.Plugins.Keyboard.Instance=class extends C3.SDKInstanceBase{constructor(a){super(a),this._keysDownByKey=new Set,this._keysDownByCode=new Set,this._triggerCode=0,this._triggerKey="";const b=this.GetRuntime().Dispatcher();this._disposables=new C3.CompositeDisposable(C3.Disposable.From(b,"keydown",(a)=>this._OnKeyDown(a.data)),C3.Disposable.From(b,"keyup",(a)=>this._OnKeyUp(a.data)),C3.Disposable.From(b,"window-blur",()=>this._OnWindowBlur()))}Release(){super.Release()}_OnKeyDown(a){const b=a["key"],c=a["which"];this._keysDownByKey.has(b)||(this._keysDownByKey.add(b),this._keysDownByCode.add(c),this._triggerCode=c,this._triggerKey=b,this.Trigger(C3.Plugins.Keyboard.Cnds.OnAnyKey),this.Trigger(C3.Plugins.Keyboard.Cnds.OnKey),this.Trigger(C3.Plugins.Keyboard.Cnds.OnKeyCode))}_OnKeyUp(a){const b=a["key"],c=a["which"];this._keysDownByKey.delete(b),this._keysDownByCode.delete(c),this._triggerCode=c,this._triggerKey=b,this.Trigger(C3.Plugins.Keyboard.Cnds.OnAnyKeyReleased),this.Trigger(C3.Plugins.Keyboard.Cnds.OnKeyReleased),this.Trigger(C3.Plugins.Keyboard.Cnds.OnKeyCodeReleased)}_OnWindowBlur(){for(const a of this._keysDownByCode)this._keysDownByCode.delete(a),this._triggerCode=a,this.Trigger(C3.Plugins.Keyboard.Cnds.OnAnyKeyReleased),this.Trigger(C3.Plugins.Keyboard.Cnds.OnKeyReleased),this.Trigger(C3.Plugins.Keyboard.Cnds.OnKeyCodeReleased)}IsKeyDown(a){return this._keysDownByKey.has(a)}IsKeyCodeDown(a){return this._keysDownByCode.has(a)}SaveToJson(){return{"tk":this._triggerCode,"tkk":this._triggerKey}}LoadFromJson(a){this._triggerCode=a["tk"],a.hasOwnProperty("tkk")&&(this._triggerKey=a["tkk"])}GetDebuggerProperties(){return[{title:"plugins.keyboard.name",properties:[{name:"plugins.keyboard.debugger.last-key-code",value:this._triggerCode},{name:"plugins.keyboard.debugger.last-key-string",value:C3.Plugins.Keyboard.Exps.StringFromKeyCode(this._triggerCode)},{name:"plugins.keyboard.debugger.last-typed-key",value:this._triggerKey}]}]}};
 
 "use strict";C3.Plugins.Keyboard.Cnds={IsKeyDown(a){return this._keysDownByCode.has(a)},OnKey(a){return this._triggerCode===a},OnAnyKey(){return!0},OnAnyKeyReleased(){return!0},OnKeyReleased(a){return this._triggerCode===a},IsKeyCodeDown(a){return a=Math.floor(a),this._keysDownByCode.has(a)},OnKeyCode(a){return this._triggerCode===a},OnKeyCodeReleased(a){return this._triggerCode===a}};
 
@@ -650,9 +650,9 @@ self.C3_GetObjectRefTable = function () {
 		C3.Behaviors.Pin,
 		C3.Behaviors.Timer,
 		C3.Plugins.Particles,
+		C3.Behaviors.Bullet,
 		C3.Plugins.TiledBg,
 		C3.Plugins.Keyboard,
-		C3.Behaviors.Bullet,
 		C3.Plugins.System.Cnds.IsGroupActive,
 		C3.Plugins.System.Cnds.OnLayoutStart,
 		C3.Behaviors.LOS.Acts.SetCone,
@@ -669,14 +669,15 @@ self.C3_GetObjectRefTable = function () {
 		C3.Plugins.Sprite.Acts.SetMirrored,
 		C3.Plugins.Sprite.Cnds.CompareY,
 		C3.Plugins.Sprite.Exps.Y,
-		C3.Plugins.Keyboard.Cnds.IsKeyDown,
-		C3.Plugins.Sprite.Acts.SetAnim,
 		C3.Behaviors.Pin.Acts.Pin,
 		C3.Plugins.Sprite.Cnds.OnCreated,
 		C3.Behaviors.Timer.Acts.StartTimer,
 		C3.Behaviors.Timer.Cnds.OnTimer,
 		C3.Plugins.Text.Acts.SetVisible,
+		C3.Plugins.Text.Acts.TypewriterText,
 		C3.Plugins.System.Acts.Wait,
+		C3.Plugins.Keyboard.Cnds.IsKeyDown,
+		C3.Plugins.Sprite.Acts.SetAnim,
 		C3.Plugins.Keyboard.Cnds.OnAnyKeyReleased,
 		C3.Plugins.Keyboard.Cnds.OnKey,
 		C3.Plugins.System.Acts.CreateObject,
@@ -689,7 +690,13 @@ self.C3_GetObjectRefTable = function () {
 		C3.Behaviors.scrollto.Acts.Shake,
 		C3.Plugins.Sprite.Cnds.OnCollision,
 		C3.Plugins.System.Acts.RestartLayout,
-		C3.Plugins.Sprite.Acts.Destroy
+		C3.Plugins.Sprite.Acts.Destroy,
+		C3.Plugins.Sprite.Cnds.IsOnScreen,
+		C3.Plugins.System.Cnds.CompareBoolVar,
+		C3.Plugins.System.Acts.SetBoolVar,
+		C3.Behaviors.Bullet.Acts.SetEnabled,
+		C3.Plugins.System.Acts.NextPrevLayout,
+		C3.Plugins.Keyboard.Cnds.OnAnyKey
 	];
 };
 
@@ -808,12 +815,14 @@ self.C3_GetObjectRefTable = function () {
 		},
 		() => "Enemy Behaviour2",
 		() => "Player behaviour",
-		() => "WASD movement",
-		() => "walk",
 		() => "PlayerDialogue",
 		() => 2,
 		() => "FirstPhrase",
+		() => " I’m out of food. I should visit a market!",
 		() => 3,
+		() => 4,
+		() => "WASD movement",
+		() => "walk",
 		() => "idle",
 		() => "Player Mirrored",
 		() => "Gameplay",
@@ -821,11 +830,11 @@ self.C3_GetObjectRefTable = function () {
 		() => 0,
 		p => {
 			const n0 = p._GetNode(0);
-			return () => (n0.ExpBehavior() + 200);
+			return () => (n0.ExpBehavior() + 300);
 		},
 		p => {
 			const n0 = p._GetNode(0);
-			return () => (n0.ExpBehavior() + 100);
+			return () => (n0.ExpBehavior() + 200);
 		},
 		() => 1,
 		() => 100,
@@ -835,11 +844,23 @@ self.C3_GetObjectRefTable = function () {
 		() => 10,
 		() => 0.5,
 		() => "LevelRestart",
-		() => "YOU WIN",
 		p => {
 			const n0 = p._GetNode(0);
 			return () => (n0.ExpObject() + 5);
-		}
+		},
+		() => "Game Progression",
+		() => "Home. Sweet home",
+		() => "Visiting Shop",
+		() => "Oh, my tooth hurts. I shuold visit dentist",
+		() => "I'm going to the shop first",
+		() => "I've already been here",
+		() => "Visiting Hospital",
+		() => "My Id card should be ready. Need to visit public service hall",
+		() => "I need to go to dentist",
+		() => "Visiting Public Service Hall",
+		() => "My granny asked me to buy some candles at the church",
+		() => "Visiting Church",
+		() => "Oh God!"
 	];
 }
 

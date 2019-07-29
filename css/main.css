@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro|Press+Start+2P');
+
+.clearfix:after {
+	content:'';
+	display: table;
+	width: 100%;
+	clear: both;
+}
+
+body {
+  padding: 0;
+	margin: 0;
+}
+
+.container {
+  width: 100%;
+	max-width: 1000px;
+  margin: 0 auto;
+}
+
+.cover {
+  background-color: #303f9f;
+}
+
+h1 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 137px;
+  color: #ffffff;
+  width: 700px;
+  float: left;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.cover img {
+  float: right;
+  width: 440px;
+  height: 440px;
+}
