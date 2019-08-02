@@ -37,3 +37,53 @@ html, body, canvas {
 }
 
 
+@font-face {
+	font-family: 'Rubik-Medium';
+	src: url('fonts/rubik-medium.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Rubik-Black';
+	src: url('fonts/rubik-black.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Rubik-BoldItalic';
+	src: url('fonts/rubik-bolditalic.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Rubik-Italic';
+	src: url('fonts/rubik-italic.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Rubik-MediumItalic';
+	src: url('fonts/rubik-mediumitalic.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Rubik-BlackItalic';
+	src: url('fonts/rubik-blackitalic.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Rubik-Light';
+	src: url('fonts/rubik-light.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Rubik-Regular';
+	src: url('fonts/rubik-regular.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Rubik-Bold';
+	src: url('fonts/rubik-bold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Rubik-LightItalic';
+	src: url('fonts/rubik-lightitalic.ttf') format('truetype');
+}
+
