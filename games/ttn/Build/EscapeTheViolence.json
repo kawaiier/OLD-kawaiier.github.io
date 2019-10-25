@@ -1,16 +1,17 @@
 {
 "companyName": "Black Dog Red Nose",
 "productName": "Violent Neighbourhood",
-"productVersion": "0.7",
+"productVersion": "0.7.5",
 "dataUrl": "EscapeTheViolence.data.unityweb",
 "wasmCodeUrl": "EscapeTheViolence.wasm.code.unityweb",
 "wasmFrameworkUrl": "EscapeTheViolence.wasm.framework.unityweb",
 "graphicsAPI": ["WebGL 2.0","WebGL 1.0"],
 "webglContextAttributes": {"preserveDrawingBuffer": false},
-"splashScreenStyle": "Dark",
-"backgroundColor": "#231F20",
+"backgroundUrl": "EscapeTheViolence.jpg",
+"splashScreenStyle": "Light",
+"backgroundColor": "#FFFFFF",
 "cacheControl": {"default": "must-revalidate"},
 "developmentBuild": false,
 "multithreading": false,
-"unityVersion": "2019.2.8f1"
+"unityVersion": "2019.2.10f1"
 }
