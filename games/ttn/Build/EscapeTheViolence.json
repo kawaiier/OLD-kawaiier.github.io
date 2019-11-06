@@ -1,7 +1,7 @@
 {
 "companyName": "Black Dog Red Nose",
 "productName": "Violent Neighbourhood",
-"productVersion": "1",
+"productVersion": "1.1",
 "dataUrl": "EscapeTheViolence.data.unityweb",
 "wasmCodeUrl": "EscapeTheViolence.wasm.code.unityweb",
 "wasmFrameworkUrl": "EscapeTheViolence.wasm.framework.unityweb",
@@ -13,5 +13,5 @@
 "cacheControl": {"default": "must-revalidate"},
 "developmentBuild": false,
 "multithreading": false,
-"unityVersion": "2019.2.10f1"
+"unityVersion": "2019.2.11f1"
 }
