@@ -122,7 +122,7 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     # render your html template
-    return render_template('flats.html')
+    return render_template('flat.html')
 
 
 @app.route('/python')
