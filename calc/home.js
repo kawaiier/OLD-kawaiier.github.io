@@ -22,7 +22,10 @@ function max_limit_check(){
 max_limit_check();
 
 const totalWindows = floorWindows * floors;
-localStorage.setItem("totalWindows", totalWindows);
+
+if (localStorage.getItem("totalWindows") == null){
+  localStorage.setItem("totalWindows", totalWindows);
+}
 
 if (localStorage.getItem("floorWindowsCache") == null) {
   localStorage.setItem("floorWindowsCache", floorWindows);
