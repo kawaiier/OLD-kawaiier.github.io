@@ -25,6 +25,8 @@ const totalWindows = floorWindows * floors;
 localStorage.setItem("totalWindows", totalWindows);
 localStorage.setItem("floorWindowsCache", floorWindows);
 localStorage.setItem("floorsCached", floors);
+console.log(localStorage);
+
 homeList.append(`Всего в доме ${totalWindows} окон!`);
 homeList.innerHTML += "<br>";
 homeList.innerHTML += "<br>";
