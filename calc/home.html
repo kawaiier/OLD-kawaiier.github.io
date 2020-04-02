@@ -3,18 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Window Calc - Results</title>
     <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+    <title>Window Calc</title>
 </head>
 <body>
     <div class="content">
         <h1>Великий Калькулятор Окошек</h1>
-        <div id="results" class="result-text form"></div>
+
+        <form action="results.html" method="GET" class="form">
+        <div id="home"></div>
         <br>
-        <a href="/calc/home.html" class="button-cancel">Назад</a>
-        <a href="/calc/index.html" class="button-cancel">На главную</a>
+        <script src="home.js"></script>
+        <p id="totalFlats"></p>
+        <button type="submit" class="button">Посчитать</button>
+        <a href="/calc/index.html" class="button-cancel">Назад</a>    
+        </form>
+        <br>
     </div>
-    <script src="main.js"></script>
     <div class="footer">
         <p>v 1.0</p>
         <p>©Sergey Manvelov / 2020

@@ -1,10 +1,16 @@
 const resultsList = document.getElementById("results");
 const usp = new URLSearchParams(window.location.search);
 
-const totalWindows = usp.get("totalWindows");
-const litWindows = usp.get("litWindows");
+const totalWindows = localStorage.getItem("totalWindows");
+const litWindows = usp.getAll("flat").length;
 const unlitWindows = totalWindows - litWindows;
-const unlitWindowsPercentage = Math.round(litWindows / totalWindows * 100);
+const unlitWindowsPercentage = Math.round(100- litWindows / totalWindows * 100);
+
+// const totalWindows = usp.get("totalWindows");
+// const litWindows = usp.get("litWindows");
+// const unlitWindows = totalWindows - litWindows;
+// const unlitWindowsPercentage = Math.round(litWindows / totalWindows * 100);
+
 
 if (unlitWindowsPercentage == 100){
     resultsList.append(`Все окошки горят! :)`);
@@ -12,7 +18,7 @@ if (unlitWindowsPercentage == 100){
     resultsList.append(`Ни одно окошко не горит :'(`);
 } else {
     resultsList.append(`Не горит ${unlitWindows} окошек, то есть ${unlitWindowsPercentage}%`);
-};
+};    
 
 
 // for (const [key, value] of usp){

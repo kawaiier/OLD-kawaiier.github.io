@@ -9,24 +9,24 @@
 <body>
     <div class="content">
     <h1>Великий Калькулятор Окошек</h1>
-    <form action="results.html" method="GET" class="form">
+    <form action="home.html" method="GET" class="form">
         <div class="formItem">
-            <label for="totalWindows">Сколько окошек всего?</label>
+            <label for="floorWindows">Сколько окон на этаже?</label>
             <br>
-            <input type="number" name="totalWindows" id="totalWindows" min="0" max="100" placeholder="0–100" required>
+            <input type="number" name="floorWindows" id="floorWindows" min="1" max="20" placeholder="1–10" required>
         </div>
         <div class="formItem">
-            <label for="litWindows">Сколько окошек горит?</label>
+            <label for="floors">Сколько этажей в доме?</label>
             <br>
-            <input type="number" name="litWindows" id="litWindows" min="0" max="100" placeholder="0–100" required>
+            <input type="number" name="floors" id="floors" min="1" max="50" placeholder="1-50" required>
         </div>
         <br>
-        <button type="submit" class="button">Посчитать</button>
+        <button type="submit" class="button">Построить</button>
         <button type="reset" class="button-cancel">Сбросить</button>
     </form>
     </div>
     <div class="footer">
-        <p>v 0.2</p>
+        <p>v 1.0</p>
         <p>©Sergey Manvelov / 2020
             <br>
         <a target="_blank" href="https://facebook.com/kawaiier">@Facebook</a> / <a target="_blank" href="https://twitter.com/kawaiier">@Twitter</a></p>
