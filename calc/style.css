@@ -1,62 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Marmelad&display=swap');
+
 html {
     height: 100%;
 }
 
 body {
     margin: 0px;
-    background-color: aliceblue;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-family: 'Marmelad', sans-serif;
+    background-image: url("https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/apple/237/office-building_1f3e2.png");
+    background-repeat: repeat;
+    background-color: #252650;
 }
 
 .content {
     text-align: center;
-    margin-top: 15%;
+    margin: 10% 20% 0% 20%;
+    padding: 2em;
+    border-style: solid;
+    border-width: 5px;
+    border-color:#009ecf;
+    background-color: #474768;
 }
 
-@media (max-width:800px){
+@media all and (max-width:800px){
     .form {
-        width: 90%;
-        background-color: bisque;
+        background-color: #474768;
         font-size: 20px;
         margin: auto;
-        padding-bottom: 20px;
+        padding-bottom: 30px;
         padding-top: 20px;
+        color: white;
     }    
 }
 
 @media (min-width:800px){
     .form {
-        width: 50%;
-        background-color: bisque;
+        background-color: #474768;
         font-size: 20px;
         margin: auto;
-        padding-bottom: 20px;
+        padding-bottom: 30px;
         padding-top: 20px;
+        color: white;
     }    
 }
 
 .formItem {   
-    padding: 20px;
+    padding: 15px;
     margin: auto;
 }
 
 @media (max-width:800px){
     h1 {
-        background-color: teal;
-        width: 90%;
+        background-color: #a9abb9;
         margin: auto;
         padding: 10px;
-        color: whitesmoke;
+        color: #252650;
     }    
 }
 
 @media (min-width:800px){
     h1 {
-        background-color: teal;
-        width: 50%;
+        background-color: #a9abb9;
         margin: auto;
         padding: 10px;
-        color: whitesmoke;
+        color: #252650;
     }    
 }
 
@@ -67,7 +74,7 @@ input[type=number]{
 }
 
 .button {
-    background-color: darkkhaki;
+    background-color: #009ecf;
     border: none;
     color: white;
     padding: 15px 32px;
@@ -79,7 +86,7 @@ input[type=number]{
 }
 
 .button-cancel {
-    background-color: darksalmon;
+    background-color: #01668e;
     border: none;
     color: white;
     padding: 12px 30px;
@@ -93,34 +100,41 @@ input[type=number]{
 @media (min-width:800px){
     .result-text {
         font-size: 50px;
-        width: 50%;
         margin: auto;
-        padding-top: 60px;
-        padding-bottom: 60px;
+        padding: 5% 5% 5% 5%;
+        /* margin: auto; */
+        /* padding-top: 60px;
+        padding-bottom: 60px; */
     }    
 }
 
 @media (max-width:800px){
     .result-text {
         font-size: 40px;
-        width: 80%;
         margin: auto;
-        padding-top: 40px;
-        padding-bottom: 40px;
+        /* padding-top: 40px;
+        padding-bottom: 40px; */
     }    
 }
 
 .footer {
-    background-color: rgb(227, 242, 253);
-    background-color: rgba(227, 242, 253, 0.9);
+    background-color: rgba(255, 255, 255, 0.8);
     margin-left: 5%;
     margin-right: 5%;
     margin-top: 15%;
     padding: 20px;
+    position: fixed;
+    bottom: 0px;
   }
 
 table {
-      background-color: grey;
+      background-color: #979797;
       margin: auto;
-      padding: 10px;
+      padding: 8px;
+}
+
+td {
+    color: black;
+    background-color:#bcc1c0;
+    padding: 3px;
 }
