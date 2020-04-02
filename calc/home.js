@@ -7,6 +7,8 @@ const floorWindows = usp.get("floorWindows");
 const floors = usp.get("floors");
 const totalWindows = floorWindows * floors;
 localStorage.setItem("totalWindows", totalWindows);
+localStorage.setItem("floorWindowsCache", floorWindows);
+localStorage.setItem("floorsCached", floors);
 homeList.append(`Всего в доме ${totalWindows} окон!`);
 homeList.innerHTML += "<br>";
 homeList.innerHTML += "<br>";
@@ -55,4 +57,12 @@ function generate_table() {
     // sets the border attribute of tbl to 2;
     tbl.setAttribute("border", "2");
   }
-  generate_table();
+
+  if (floors != null){
+    generate_table();
+  } else {
+    floors = localStorage.getItem("floorsCached");
+    floorWindows = localStorage.getItem("floorWindowsCache");
+    generate_table();
+  }
+  
