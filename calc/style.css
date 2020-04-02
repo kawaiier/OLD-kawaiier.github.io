@@ -40,13 +40,26 @@ body {
     margin: auto;
 }
 
-h1 {
-    background-color: teal;
-    width: 70%;
-    margin: auto;
-    padding: 10px;
-    color: whitesmoke;
+@media (max-width:800px){
+    h1 {
+        background-color: teal;
+        width: 90%;
+        margin: auto;
+        padding: 10px;
+        color: whitesmoke;
+    }    
 }
+
+@media (min-width:800px){
+    h1 {
+        background-color: teal;
+        width: 50%;
+        margin: auto;
+        padding: 10px;
+        color: whitesmoke;
+    }    
+}
+
 
 input[type=number]{
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
