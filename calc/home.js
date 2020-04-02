@@ -23,9 +23,13 @@ max_limit_check();
 
 const totalWindows = floorWindows * floors;
 localStorage.setItem("totalWindows", totalWindows);
-localStorage.setItem("floorWindowsCache", floorWindows);
-localStorage.setItem("floorsCached", floors);
-console.log(localStorage);
+
+if (localStorage.getItem("floorWindowsCache") == null) {
+  localStorage.setItem("floorWindowsCache", floorWindows);
+}
+if (localStorage.getItem("floorsCache") == null) {
+  localStorage.setItem("floorsCache", floors);
+}
 
 homeList.append(`Всего в доме ${totalWindows} окон!`);
 homeList.innerHTML += "<br>";
@@ -79,7 +83,7 @@ function generate_table() {
   if (floors != null && floorWindows != null){
     generate_table();
   } else {
-    floors = localStorage.getItem("floorsCached");
+    floors = localStorage.getItem("floorsCache");
     floorWindows = localStorage.getItem("floorWindowsCache");
     generate_table();
   }
