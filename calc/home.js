@@ -3,8 +3,24 @@ const usp = new URLSearchParams(window.location.search);
 
 var mybr = document.createElement('br');
 
-const floorWindows = usp.get("floorWindows");
-const floors = usp.get("floors");
+const floorWindowsAllowed = 10;
+const floorsAllowed = 30;
+
+let floorWindows = usp.get("floorWindows");
+let floors = usp.get("floors");
+
+function max_limit_check(){
+  if (floorWindows > floorWindowsAllowed){
+    floorWindows = floorWindowsAllowed;
+  }
+  
+  if (floors> floorsAllowed){
+    floors = floorsAllowed;
+  }  
+}
+
+max_limit_check();
+
 const totalWindows = floorWindows * floors;
 localStorage.setItem("totalWindows", totalWindows);
 localStorage.setItem("floorWindowsCache", floorWindows);
