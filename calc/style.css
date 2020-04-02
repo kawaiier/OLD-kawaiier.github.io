@@ -12,17 +12,17 @@ body {
     background-color: #252650;
 }
 
-.content {
-    text-align: center;
-    margin: 10% 20% 0% 20%;
-    padding: 2em;
-    border-style: solid;
-    border-width: 5px;
-    border-color:#009ecf;
-    background-color: #474768;
-}
+@media (max-width:800px){
+    .content {
+        text-align: center;
+        margin: 5% 10% 0% 10%;
+        padding: 2em;
+        border-style: solid;
+        border-width: 5px;
+        border-color:#009ecf;
+        background-color: #474768;
+    }
 
-@media all and (max-width:800px){
     .form {
         background-color: #474768;
         font-size: 20px;
@@ -31,9 +31,19 @@ body {
         padding-top: 20px;
         color: white;
     }    
+
 }
 
 @media (min-width:800px){
+    .content {
+        text-align: center;
+        margin: 10% 20% 0% 20%;
+        padding: 2em;
+        border-style: solid;
+        border-width: 5px;
+        border-color:#009ecf;
+        background-color: #474768;
+    }
     .form {
         background-color: #474768;
         font-size: 20px;
