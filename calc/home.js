@@ -58,7 +58,7 @@ function generate_table() {
     tbl.setAttribute("border", "2");
   }
 
-  if (floors != null){
+  if (floors != null && floorWindows != null){
     generate_table();
   } else {
     floors = localStorage.getItem("floorsCached");
