@@ -14,17 +14,20 @@ function max_limit_check(){
     floorWindows = floorWindowsAllowed;
   }
   
-  if (floors> floorsAllowed){
+  if (floors > floorsAllowed){
     floors = floorsAllowed;
   }  
 }
 
 max_limit_check();
 
-if (localStorage.getItem("floorWindowsCache") == null || localStorage.getItem("floorsCache") == null){
-  const totalWindows = floorWindows * floors;
+const totalWindows = floorWindows * floors;
   localStorage.setItem("totalWindows", totalWindows);
-}
+
+// if (localStorage.getItem("floorWindowsCache") == null || localStorage.getItem("floorsCache") == null){
+//   const totalWindows = floorWindows * floors;
+//   localStorage.setItem("totalWindows", totalWindows);
+// }
 
 if (localStorage.getItem("floorWindowsCache") == null) {
   localStorage.setItem("floorWindowsCache", floorWindows);
