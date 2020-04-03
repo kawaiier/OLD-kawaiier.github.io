@@ -28,7 +28,7 @@ function input_check(){
   }
 }
 
-if (floors != null){
+if (floors != 0 || floorWindows != 0){
   input_check();
 }
 
