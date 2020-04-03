@@ -28,7 +28,10 @@ function input_check(){
   }
 }
 
-input_check();
+if (floors != null){
+  input_check();
+}
+
 
 function max_limit_check() {
     if (floorWindows > floorWindowsAllowed) {
