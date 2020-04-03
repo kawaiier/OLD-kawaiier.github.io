@@ -30,14 +30,24 @@ function max_limit_check() {
 }
 max_limit_check();
 
-if (localStorage.getItem("floorWindowsCache") == null) {
-    localStorage.setItem("floorWindowsCache", floorWindows);
+let floorWindowsCache = localStorage.getItem("floorWindowsCache");
+let floorsCache = localStorage.getItem("floorsCache");
+
+if (floorWindowsCache == null){
+  localStorage.setItem("floorWindowsCache", floorWindows);
 }
-if (localStorage.getItem("floorsCache") == null) {
-    localStorage.setItem("floorsCache", floors);
+if (floorsCache == null){
+  localStorage.setItem("floorsCache", floors);
 }
 
-if (localStorage.getItem("floorWindowsCache") == null || localStorage.getItem("floorsCache") == null){
+// if (localStorage.getItem("floorWindowsCache") == null) {
+//     localStorage.setItem("floorWindowsCache", floorWindows);
+// }
+// if (localStorage.getItem("floorsCache") == null) {
+//     localStorage.setItem("floorsCache", floors);
+// }
+
+if (floorWindowsCache == null || floorsCache == null){
   totalWindows = floorWindows * floors;  
   localStorage.setItem("totalWindows", totalWindows);
 } else {
