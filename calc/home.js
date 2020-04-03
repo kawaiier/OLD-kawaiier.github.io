@@ -20,11 +20,6 @@ function max_limit_check() {
 }
 max_limit_check();
 
-// if (localStorage.getItem("floorWindowsCache") == null || localStorage.getItem("floorsCache") == null){
-//   const totalWindows = floorWindows * floors;
-//   localStorage.setItem("totalWindows", totalWindows);
-// }
-
 if (localStorage.getItem("floorWindowsCache") == null) {
     localStorage.setItem("floorWindowsCache", floorWindows);
 }
@@ -33,8 +28,10 @@ if (localStorage.getItem("floorsCache") == null) {
 }
 
 const totalWindows = floorWindows * floors;
-localStorage.setItem("totalWindows", totalWindows);
 
+if (localStorage.getItem("floorWindowsCache") == null || localStorage.getItem("floorsCache") == null){
+  localStorage.setItem("totalWindows", totalWindows);
+}
 
 homeList.append(`Всего в доме ${totalWindows} окошек!`);
 homeList.innerHTML += "<br>";
