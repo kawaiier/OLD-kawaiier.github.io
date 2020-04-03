@@ -32,7 +32,6 @@ if (floors != 0 || floorWindows != 0) {
     input_check();
 }
 
-
 function max_limit_check() {
     if (floorWindows > floorWindowsAllowed) {
         floorWindows = floorWindowsAllowed;
@@ -64,6 +63,8 @@ homeList.append(`Всего в доме ${totalWindows} окошек!`);
 homeList.innerHTML += "<br>";
 homeList.innerHTML += "<br>";
 
+let checkboxID = 0;
+
 function generate_table() {
     // get the reference for the body
     var body = document.getElementById("home");
@@ -82,17 +83,22 @@ function generate_table() {
             // node the contents of the <td>, and put the <td> at
             // the end of the table row
             var cell = document.createElement("td");
+            cell.id = "cell" + checkboxID;
             cell.classList.add("checkbox-style");
             var checkbox = document.createElement('input');
+            // checkbox.addEventListener('click', checkbox_click2);
+            // checkbox.onToggle = "checkbox_click()";
             checkbox.type = "checkbox";
             checkbox.name = "flat";
             checkbox.value = 1;
             checkbox.label = "";
-            checkbox.id = j;
+            checkbox.id = checkboxID;
+            checkbox.onclick = () => checkbox_click();
             //var cellText = document.createTextNode("cell in row "+i+", column "+j);
             //cell.appendChild(cellText);
             cell.appendChild(checkbox);
             row.appendChild(cell);
+            checkboxID++;
         }
 
         // add the row to the end of the table body
@@ -108,3 +114,10 @@ function generate_table() {
 }
 
 generate_table();
+
+function checkbox_click() {
+    // let checkbox = document.getElementById(`cell${test}`);
+    // checkbox.style.backgroundColor = "yellow";
+    console.log("This is this:");
+    console.log(this);
+  }
