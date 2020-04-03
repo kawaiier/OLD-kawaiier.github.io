@@ -47,12 +47,14 @@ if (floorsCache == null){
 //     localStorage.setItem("floorsCache", floors);
 // }
 
-if (floorWindowsCache == null || floorsCache == null){
-  totalWindows = floorWindows * floors;  
-  localStorage.setItem("totalWindows", totalWindows);
-} else {
-  totalWindows = floorWindows * floors;
-}
+totalWindows = floorWindows * floors;
+
+// if (floorWindowsCache == null || floorsCache == null){
+//   totalWindows = floorWindows * floors;  
+//   localStorage.setItem("totalWindows", totalWindows);
+// } else {
+//   totalWindows = floorWindows * floors;
+// }
 
 homeList.append(`Всего в доме ${totalWindows} окошек!`);
 homeList.innerHTML += "<br>";
