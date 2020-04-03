@@ -13,23 +13,23 @@ let floorsCache = localStorage.getItem("floorsCache");
 
 let mybr = document.createElement('br');
 
-function input_check(){
-  if (isNaN(floorWindows)  || isNaN(floors)){
-    floorWindows = Math.random() * floorWindowsAllowed;
-    floors = Math.random() * floorsAllowed;
-  }
-  if (typeof floorWindows == "number"){
-    floorWindows = Math.round(floorWindows);
-    floorWindows = Math.abs(floorWindows);
-  }
-  if (typeof floors == "number") {
-    floors = Math.round(floors);
-    floors = Math.abs(floors);
-  }
+function input_check() {
+    if (isNaN(floorWindows) || isNaN(floors)) {
+        floorWindows = Math.random() * floorWindowsAllowed;
+        floors = Math.random() * floorsAllowed;
+    }
+    if (typeof floorWindows == "number") {
+        floorWindows = Math.round(floorWindows);
+        floorWindows = Math.abs(floorWindows);
+    }
+    if (typeof floors == "number") {
+        floors = Math.round(floors);
+        floors = Math.abs(floors);
+    }
 }
 
-if (floors != 0 || floorWindows != 0){
-  input_check();
+if (floors != 0 || floorWindows != 0) {
+    input_check();
 }
 
 
@@ -44,16 +44,16 @@ function max_limit_check() {
 }
 max_limit_check();
 
-function check_cache(){
-  if (floorWindowsCache == null && floorsCache == null){
-    localStorage.setItem("floorWindowsCache", floorWindows);
-    localStorage.setItem("floorsCache", floors);
-  }
-  
-  if (floorWindows == 0 && floors == 0){
-    floorWindows = floorWindowsCache;
-    floors = floorsCache;
-  }  
+function check_cache() {
+    if (floorWindowsCache == null && floorsCache == null) {
+        localStorage.setItem("floorWindowsCache", floorWindows);
+        localStorage.setItem("floorsCache", floors);
+    }
+
+    if (floorWindows == 0 && floors == 0) {
+        floorWindows = floorWindowsCache;
+        floors = floorsCache;
+    }
 }
 check_cache();
 
