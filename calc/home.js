@@ -39,6 +39,8 @@ chech_cache();
 
 totalWindows = floorWindows * floors;
 
+localStorage.setItem("totalWindows", totalWindows);
+
 homeList.append(`Всего в доме ${totalWindows} окошек!`);
 homeList.innerHTML += "<br>";
 homeList.innerHTML += "<br>";
