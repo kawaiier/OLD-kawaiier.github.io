@@ -1,12 +1,3 @@
-var currentdate = new Date(); 
-var datetime = "Last Sync: " + currentdate.getDate() + "/"
-                + (currentdate.getMonth()+1)  + "/" 
-                + currentdate.getFullYear() + " @ "  
-                + currentdate.getHours() + ":"  
-                + currentdate.getMinutes() + ":" 
-                + currentdate.getSeconds();
-console.log(datetime);
-
 const usp = new URLSearchParams(window.location.search);
 const homeList = document.getElementById("home");
 
@@ -16,6 +7,9 @@ let totalWindows = 0;
 
 let floorWindows = usp.get("floorWindows");
 let floors = usp.get("floors");
+
+let floorWindowsCache = localStorage.getItem("floorWindowsCache");
+let floorsCache = localStorage.getItem("floorsCache");
 
 let mybr = document.createElement('br');
 
@@ -30,18 +24,18 @@ function max_limit_check() {
 }
 max_limit_check();
 
-let floorWindowsCache = localStorage.getItem("floorWindowsCache");
-let floorsCache = localStorage.getItem("floorsCache");
-
-if (floorWindowsCache == null && floorsCache == null){
-  localStorage.setItem("floorWindowsCache", floorWindows);
-  localStorage.setItem("floorsCache", floors);
+function chech_cache(){
+  if (floorWindowsCache == null && floorsCache == null){
+    localStorage.setItem("floorWindowsCache", floorWindows);
+    localStorage.setItem("floorsCache", floors);
+  }
+  
+  if (floorWindows == null && floors == null){
+    floorWindows = floorWindowsCache;
+    floors = floorsCache;
+  }  
 }
-
-if (floorWindows == null && floors == null){
-  floorWindows = floorWindowsCache;
-  floors = floorsCache;
-}
+chech_cache();
 
 totalWindows = floorWindows * floors;
 
@@ -92,10 +86,12 @@ function generate_table() {
     tbl.setAttribute("border", "2");
 }
 
-if (floors != null && floorWindows != null) {
-    generate_table();
-} else {
-    floors = localStorage.getItem("floorsCache");
-    floorWindows = localStorage.getItem("floorWindowsCache");
-    generate_table();
-}
+generate_table();
+
+// if (floors != null && floorWindows != null) {
+//     generate_table();
+// } else {
+//     floors = localStorage.getItem("floorsCache");
+//     floorWindows = localStorage.getItem("floorWindowsCache");
+//     generate_table();
+// }
