@@ -8,7 +8,7 @@ html
 body
 {
   background-color:#252650;
-  background-image:url(assets/office-building.png);
+  background-image:url(../assets/office-building.png);
   background-repeat:repeat;
   font-family:Marmelad, sans-serif;
   margin:0;
