@@ -7,7 +7,7 @@ html {
 body {
     margin: 0px;
     font-family: 'Marmelad', sans-serif;
-    background-image: url("https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/apple/237/office-building_1f3e2.png");
+    background-image: url("assets/office-building.png");
     background-repeat: repeat;
     background-color: #252650;
 }

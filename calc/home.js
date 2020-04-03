@@ -33,11 +33,14 @@ max_limit_check();
 let floorWindowsCache = localStorage.getItem("floorWindowsCache");
 let floorsCache = localStorage.getItem("floorsCache");
 
-if (floorWindowsCache == null){
+if (floorWindowsCache == null && floorsCache == null){
   localStorage.setItem("floorWindowsCache", floorWindows);
-}
-if (floorsCache == null){
   localStorage.setItem("floorsCache", floors);
+}
+
+if (floorWindows == null && floors == null){
+  floorWindows = floorWindowsCache;
+  floors = floorsCache;
 }
 
 // if (localStorage.getItem("floorWindowsCache") == null) {
