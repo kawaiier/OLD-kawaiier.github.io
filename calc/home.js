@@ -12,7 +12,7 @@ const homeList = document.getElementById("home");
 
 const floorWindowsAllowed = 10;
 const floorsAllowed = 30;
-const totalWindows;
+const totalWindows = 0;
 
 let floorWindows = usp.get("floorWindows");
 let floors = usp.get("floors");
