@@ -71,7 +71,7 @@ body {
         border-style: solid;
         border-color:#009ecf;
         border-radius: 5px;
-        font-size: 40px;
+        font-size: 30px;
     }    
 
     input[type=number]{
@@ -147,7 +147,7 @@ body {
 
 @media (max-width:800px){
     .result-text {
-        font-size: 35px;
+        font-size: 25px;
         margin: auto;
         /* padding-top: 40px;
         padding-bottom: 40px; */
