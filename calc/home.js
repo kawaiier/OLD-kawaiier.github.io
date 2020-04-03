@@ -3,6 +3,7 @@ const homeList = document.getElementById("home");
 
 const floorWindowsAllowed = 10;
 const floorsAllowed = 30;
+const totalWindows;
 
 let floorWindows = usp.get("floorWindows");
 let floors = usp.get("floors");
@@ -28,11 +29,11 @@ if (localStorage.getItem("floorsCache") == null) {
 }
 
 if (localStorage.getItem("floorWindowsCache") == null || localStorage.getItem("floorsCache") == null){
-  const totalWindows = floorWindows * floors;  
+  totalWindows = floorWindows * floors;  
   localStorage.setItem("totalWindows", totalWindows);
+} else {
+  totalWindows = floorWindows * floors;
 }
-
-const totalWindows = floorWindows * floors;
 
 homeList.append(`Всего в доме ${totalWindows} окошек!`);
 homeList.innerHTML += "<br>";
