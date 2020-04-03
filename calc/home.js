@@ -5,13 +5,30 @@ const floorWindowsAllowed = 10;
 const floorsAllowed = 30;
 let totalWindows = 0;
 
-let floorWindows = usp.get("floorWindows");
-let floors = usp.get("floors");
+let floorWindows = +usp.get("floorWindows");
+let floors = +usp.get("floors");
 
 let floorWindowsCache = localStorage.getItem("floorWindowsCache");
 let floorsCache = localStorage.getItem("floorsCache");
 
 let mybr = document.createElement('br');
+
+function input_check(){
+  if (isNaN(floorWindows)  || isNaN(floors)){
+    floorWindows = Math.random() * floorWindowsAllowed;
+    floors = Math.random() * floorsAllowed;
+  }
+  if (typeof floorWindows == "number"){
+    floorWindows = Math.round(floorWindows);
+    floorWindows = Math.abs(floorWindows);
+  }
+  if (typeof floors == "number") {
+    floors = Math.round(floors);
+    floors = Math.abs(floors);
+  }
+}
+
+input_check();
 
 function max_limit_check() {
     if (floorWindows > floorWindowsAllowed) {
@@ -38,7 +55,6 @@ function chech_cache(){
 chech_cache();
 
 totalWindows = floorWindows * floors;
-
 localStorage.setItem("totalWindows", totalWindows);
 
 homeList.append(`Всего в доме ${totalWindows} окошек!`);
@@ -89,11 +105,3 @@ function generate_table() {
 }
 
 generate_table();
-
-// if (floors != null && floorWindows != null) {
-//     generate_table();
-// } else {
-//     floors = localStorage.getItem("floorsCache");
-//     floorWindows = localStorage.getItem("floorWindowsCache");
-//     generate_table();
-// }

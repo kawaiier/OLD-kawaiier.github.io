@@ -6,12 +6,6 @@ const litWindows = usp.getAll("flat").length;
 const unlitWindows = totalWindows - litWindows;
 const unlitWindowsPercentage = Math.round(100 - litWindows / totalWindows * 100);
 
-// const totalWindows = usp.get("totalWindows");
-// const litWindows = usp.get("litWindows");
-// const unlitWindows = totalWindows - litWindows;
-// const unlitWindowsPercentage = Math.round(litWindows / totalWindows * 100);
-
-
 if (unlitWindowsPercentage == 100) {
     resultsList.append(`Ни одно окошко не горит :'(`);
 } else if (unlitWindowsPercentage == 0) {
