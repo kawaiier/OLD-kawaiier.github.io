@@ -76,8 +76,8 @@ td:hover
   color:#ffd483;
 }
 
-@media max-width800px {
-  .content
+@media (max-width:800px) {
+.content
   {
     background-color:#474768;
     border-color:#009ecf;
@@ -135,7 +135,7 @@ td:hover
   }
 }
 
-@media min-width800px {
+@media (min-width:800px) {
   .content
   {
     background-color:#474768;
