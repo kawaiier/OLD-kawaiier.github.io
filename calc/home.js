@@ -44,18 +44,18 @@ function max_limit_check() {
 }
 max_limit_check();
 
-function chech_cache(){
+function check_cache(){
   if (floorWindowsCache == null && floorsCache == null){
     localStorage.setItem("floorWindowsCache", floorWindows);
     localStorage.setItem("floorsCache", floors);
   }
   
-  if (floorWindows == null && floors == null){
+  if (floorWindows == 0 && floors == 0){
     floorWindows = floorWindowsCache;
     floors = floorsCache;
   }  
 }
-chech_cache();
+check_cache();
 
 totalWindows = floorWindows * floors;
 localStorage.setItem("totalWindows", totalWindows);
