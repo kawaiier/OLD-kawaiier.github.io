@@ -1,13 +1,13 @@
-const homeList = document.getElementById("home");
 const usp = new URLSearchParams(window.location.search);
-
-var mybr = document.createElement('br');
+const homeList = document.getElementById("home");
 
 const floorWindowsAllowed = 10;
 const floorsAllowed = 30;
 
 let floorWindows = usp.get("floorWindows");
 let floors = usp.get("floors");
+
+let mybr = document.createElement('br');
 
 function max_limit_check() {
     if (floorWindows > floorWindowsAllowed) {
@@ -18,11 +18,7 @@ function max_limit_check() {
         floors = floorsAllowed;
     }
 }
-
 max_limit_check();
-
-const totalWindows = floorWindows * floors;
-localStorage.setItem("totalWindows", totalWindows);
 
 // if (localStorage.getItem("floorWindowsCache") == null || localStorage.getItem("floorsCache") == null){
 //   const totalWindows = floorWindows * floors;
@@ -35,6 +31,10 @@ if (localStorage.getItem("floorWindowsCache") == null) {
 if (localStorage.getItem("floorsCache") == null) {
     localStorage.setItem("floorsCache", floors);
 }
+
+const totalWindows = floorWindows * floors;
+localStorage.setItem("totalWindows", totalWindows);
+
 
 homeList.append(`Всего в доме ${totalWindows} окошек!`);
 homeList.innerHTML += "<br>";
