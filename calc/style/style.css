@@ -79,6 +79,21 @@ body {
         font-size: 20px;
         width: 100%;
     }
+    .result-text {
+        font-size: 25px;
+        margin: auto;
+        /* padding-top: 40px;
+        padding-bottom: 40px; */
+    }
+    .footer {
+        background-color: rgba(255, 255, 255, 0.8);
+        /* margin: 1% 1% 0% 1%; */
+        padding: 5px;
+        position: sticky;
+        bottom: 0px;
+        font-size: 12px;
+        /* width: 100%; */
+      }
     
 }
 
@@ -100,6 +115,24 @@ body {
         font-size: 20px;
         width: 30%;
     }
+    
+    .result-text {
+        font-size: 45px;
+        margin: auto;
+        padding: 5% 5% 5% 5%;
+        /* margin: auto; */
+        /* padding-top: 60px;
+        padding-bottom: 60px; */
+    }    
+    .footer {
+        background-color: rgba(255, 255, 255, 0.8);
+        margin: 1% 5% 0% 5%;
+        padding: 10px;
+        position: sticky;
+        bottom: 0px;
+        font-size: 14px;
+        /* width: 100%; */
+      }
     
 }
 
@@ -133,36 +166,6 @@ body {
 .button-cancel:hover{
    background-color: rgba(1, 102, 142, 1.00);
 }
-
-@media (min-width:800px){
-    .result-text {
-        font-size: 45px;
-        margin: auto;
-        padding: 5% 5% 5% 5%;
-        /* margin: auto; */
-        /* padding-top: 60px;
-        padding-bottom: 60px; */
-    }    
-}
-
-@media (max-width:800px){
-    .result-text {
-        font-size: 25px;
-        margin: auto;
-        /* padding-top: 40px;
-        padding-bottom: 40px; */
-    }    
-}
-
-.footer {
-    background-color: rgba(255, 255, 255, 0.8);
-    margin: 1% 5% 0% 5%;
-    padding: 10px;
-    position: sticky;
-    bottom: 0px;
-    font-size: 14px;
-    /* width: 100%; */
-  }
 
 table {
       background-color: #979797;
