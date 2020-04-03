@@ -27,11 +27,12 @@ if (localStorage.getItem("floorsCache") == null) {
     localStorage.setItem("floorsCache", floors);
 }
 
-const totalWindows = floorWindows * floors;
-
 if (localStorage.getItem("floorWindowsCache") == null || localStorage.getItem("floorsCache") == null){
+  const totalWindows = floorWindows * floors;  
   localStorage.setItem("totalWindows", totalWindows);
 }
+
+const totalWindows = floorWindows * floors;
 
 homeList.append(`Всего в доме ${totalWindows} окошек!`);
 homeList.innerHTML += "<br>";
