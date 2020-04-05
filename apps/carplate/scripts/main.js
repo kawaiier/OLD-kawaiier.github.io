@@ -5,12 +5,12 @@ document.getElementsByTagName('head')[0].appendChild(script);
 
 const signElements = 7;
 
-window.onload = function() {
-    document.getElementsByTagName("input").value = "";
-    document.getElementsByTagName("input").disabled = false;
-    const usp = new URLSearchParams(window.location.search);
-    usp.values = "";
-}
+// window.onload = function() {
+//     document.getElementsByTagName("input").value = "";
+//     document.getElementsByTagName("input").disabled = false;
+//     const usp = new URLSearchParams(window.location.search);
+//     usp.values = "";
+// }
 
 function skipIfMaxLetter(element) {
     max = parseInt(element.dataset.max)    

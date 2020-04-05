@@ -1,18 +1,9 @@
 const usp = new URLSearchParams(window.location.search);
 const resultsList = document.getElementById("result-plate");
 
-// Array Remove - By John Resig (MIT Licensed)
-Array.prototype.remove = function(from, to) {
-    var rest = this.slice((to || from) + 1 || this.length);
-    this.length = from < 0 ? this.length + from : from;
-    return this.push.apply(this, rest);
-  };
-
 document.addEventListener('DOMContentLoaded', function() {
     var canvas = document.getElementById("plateCanvas");
     var ctx = canvas.getContext("2d");
-    ctx.fillStyle = "black";
-    //ctx.fillRect(0, 0, 100, 100);
     drawText(ctx);
 });
 
@@ -28,14 +19,12 @@ function createPlateString(text, i){
     drawLetter(text, i);
 }
 
-//plate.remove(0);
-
-resultsList.append(plate);
+// resultsList.append(plate);
 
 function drawText(ctx){
     ctx.font = '48px sans-serif';
     ctx.textAlign = "center";
-    ctx.fillText("Номер моей грузинской машины", 400, 100);    
+    ctx.fillText("Номер моей грузинской машины", 400, 100);
 }
 
 function drawLetter(letter, i){
