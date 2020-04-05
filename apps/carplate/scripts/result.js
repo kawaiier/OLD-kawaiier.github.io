@@ -4,6 +4,7 @@ const resultsList = document.getElementById("result-plate");
 document.addEventListener('DOMContentLoaded', function() {
     var canvas = document.getElementById("plateCanvas");
     var ctx = canvas.getContext("2d");
+    draw();
     drawText(ctx);
 });
 
@@ -24,19 +25,19 @@ function createPlateString(text, i){
 function drawText(ctx){
     ctx.font = '48px sans-serif';
     ctx.textAlign = "center";
-    ctx.fillText("Номер моей грузинской машины", 400, 100);
 }
 
 function drawLetter(letter, i){
     var canvas = document.getElementById("plateCanvas");
     var ctx = canvas.getContext("2d");
     ctx.font = '88px sans-serif';
-    ctx.fillText(letter, 80*i, 250);
+    ctx.fillText(letter, 70*i, 150, 40);
 }
 
 const btnDisplay = document.getElementById("btnDisplay");
 const btnDownload = document.getElementById("btnDownload");
 const myCanvas = document.getElementById("plateCanvas");
+const bckgCanvas = document.getElementById("backgroundCanvas");
 const imgConverted = document.getElementById("createdPlate");
 
 btnDisplay.addEventListener("click", function(){
@@ -56,3 +57,13 @@ btnDownload.addEventListener("click", function(){
         document.body.removeChild(a);
     }
 })
+
+function draw() {
+    var ctx = myCanvas.getContext('2d');
+    var img = new Image();
+    img.onload = function() {
+      ctx.drawImage(img, 0, 0, 600, 300);
+    };
+    img.src = 'image.png';
+  }
+  
