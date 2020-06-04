@@ -3,7 +3,7 @@ var buttonReady = document.getElementById("ready");
 var input = document.getElementById("userinput");
 var ul = document.querySelector("ul");
 
-const minLength = 1;
+const minLength = 23;
 const enterKeyCode = 13;
 
 var totalItems = 0;
