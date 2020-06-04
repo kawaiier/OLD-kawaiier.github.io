@@ -1,0 +1,127 @@
+ @import url('https://fonts.googleapis.com/css2?family=Marmelad&display=swap');
+
+body {
+    margin: auto 0;
+    font-family: 'Marmelad', sans-serif;
+    background-color: #FAF3E7;
+    font-size: 20px;
+}
+
+.container {
+    margin: 20px;
+    margin-top: 10vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border: 2px white solid;
+    box-shadow: 10px 10px 5px 0px rgba(0,0,0,.1);
+}
+
+.intro {
+    /* border: 2px black solid; */
+    padding: 20px;
+}
+
+h1 {
+    font-size: 3em;
+    color: black;
+    text-align: center;
+    margin: 15px;
+}
+
+.subline {
+    font-size: 2em;
+    text-align: right;
+    margin: 5px;
+    /* width: 80%; */
+}
+
+.entry {
+    padding: 40px;
+    /* border: 2px black solid; */
+}
+
+input {
+    line-height: 20px;
+    font-size: 18px;
+}
+
+button {
+    cursor: pointer;
+}
+
+ul {
+    margin: 0;
+    padding: 20px;
+    width: 470px;
+    list-style-type: none;
+    /* border: 2px black solid; */
+}
+
+li {
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+      justify-content: space-around;
+    /* text-align: center; */
+}
+
+li:before {
+  content: "→";
+  padding-right: 10px;
+}
+
+li:hover {
+    background-color: white;
+}
+
+.done {
+    text-decoration: line-through;
+}
+
+li button {
+    display: inline-block;
+    margin-left: 100px;
+}
+
+.finish {
+    padding:40px;
+}
+
+button {
+	box-shadow:inset 0px 1px 0px 0px #ffffff;
+	background-color:transparent;
+	border-radius:6px;
+	border:1px solid #dcdcdc;
+	display:inline-block;
+	cursor:pointer;
+	color:#777777;
+	font-family:Arial;
+	font-size:15px;
+	font-weight:bold;
+	padding:6px 24px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #ffffff;
+}
+button:hover {
+	background-color:transparent;
+}
+button:active {
+	position:relative;
+	top:1px;
+}
+
+button:disabled {
+    color:rgba(119,119,119,0.5);
+}
+
+.footer {
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+}
