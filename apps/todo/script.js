@@ -70,17 +70,13 @@ function createDeleteButton(liID){
 function deleteItem(id){
     document.getElementById(id).outerHTML = "";
     totalItems--;
-    // li[id].outerHTML = "";
 }
 
 function toggleDone(id){
     document.getElementById(id).classList.toggle("done");
-    // console.log("I'd like to toggle li with id of", id);
-    // list[id].classList.toggle("done");
 }
 
 function listGotFull(){
-    // input.setAttribute("readonly", "readonly");
     alert("Создать больше пяти задач нельзя. Удали что-нибудь");
 }
 
@@ -90,12 +86,9 @@ function finishList(){
         btns[btn].setAttribute("disabled", "true");
     }
     editable = false;
-    // btns.setAttribute("disabled", "true");
 }
 
+// Input Listeners
 button.addEventListener("click", addItemAfterClick)
 buttonReady.addEventListener("click", finishList)
-
-// buttonDel.addEventListener("click", deleteItem)
-
 input.addEventListener("keypress", addItemAfterEnter)
