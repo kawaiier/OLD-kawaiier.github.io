@@ -1,21 +1,21 @@
-var button = document.getElementById("enter");
-var buttonReady = document.getElementById("ready");
-var input = document.getElementById("userinput");
-var ul = document.querySelector("ul");
+const button = document.getElementById("enter");
+const buttonReady = document.getElementById("ready");
+const input = document.getElementById("userinput");
+const ul = document.querySelector("ul");
 
 const minLength = 23;
 const enterKeyCode = 13;
 
-var totalItems = 0;
+let totalItems = 0;
 const maxItems = 5;
 
-var currentItemID = 0;
+let currentItemID = 0;
 
-var li;
-var list;
-var buttonDel = null;
+let li;
+let list;
+let buttonDel = null;
 
-var editable = true;
+let editable = true;
 
 window.onload = startFunction;
 
@@ -60,11 +60,11 @@ function createItem(){
 
 function createDeleteButton(liID){
     buttonDel = document.createElement("button");
-    var text = `deleteItem(${liID})`;
+    let text = `deleteItem(${liID})`;
     buttonDel.appendChild(document.createTextNode("X"));
     buttonDel.setAttribute("onClick", text);
     li.appendChild(buttonDel);
-    buttonDel.addEventListener("click", deleteItem)
+    buttonDel.addEventListener("click", deleteItem);
 }
 
 function deleteItem(id){
@@ -81,8 +81,8 @@ function listGotFull(){
 }
 
 function finishList(){
-    var btns = document.querySelectorAll("button");
-    for (var btn = 0; btn < btns.length; btn++){
+    let btns = document.querySelectorAll("button");
+    for (let btn = 0; btn < btns.length; btn++) {
         btns[btn].setAttribute("disabled", "true");
     }
     editable = false;
