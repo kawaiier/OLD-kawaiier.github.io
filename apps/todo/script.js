@@ -1,7 +1,7 @@
 const button = document.getElementById("enter");
 const buttonReady = document.getElementById("ready");
 const input = document.getElementById("userinput");
-const ul = document.querySelector("ul");
+const _ul = document.querySelector("ul");
 
 const minLength = 23;
 const enterKeyCode = 13;
@@ -46,7 +46,7 @@ function createItem(){
         li.setAttribute("id", currentItemID);
         li.setAttribute("onClick", "toggleDone(this.id)");
         li.appendChild(document.createTextNode(input.value));
-        ul.appendChild(li);
+        _ul.appendChild(li);
         createDeleteButton(currentItemID);
         list = document.querySelectorAll("li");
         input.value = "";
