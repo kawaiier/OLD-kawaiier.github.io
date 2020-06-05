@@ -1,6 +1,6 @@
-const button = document.getElementById("enter");
+const _button = document.getElementById("enter");
 const buttonReady = document.getElementById("ready");
-const input = document.getElementById("userinput");
+const _input = document.getElementById("userinput");
 const _ul = document.querySelector("ul");
 
 const minLength = 23;
@@ -11,7 +11,7 @@ const maxItems = 5;
 
 let currentItemID = 0;
 
-let li;
+let _li;
 let list;
 let buttonDel = null;
 
@@ -20,12 +20,12 @@ let editable = true;
 window.onload = startFunction;
 
 function startFunction(){
-    input.value = "";
-    input.focus();
+    _input.value = "";
+    _input.focus();
 }
 
 function inputLength(){
-    return input.value.length;
+    return _input.value.length;
 }
 
 function addItemAfterClick(){
@@ -42,15 +42,15 @@ function addItemAfterEnter(event){
 
 function createItem(){
     if (totalItems < maxItems){
-        li = document.createElement("li");
-        li.setAttribute("id", currentItemID);
-        li.setAttribute("onClick", "toggleDone(this.id)");
-        li.appendChild(document.createTextNode(input.value));
-        _ul.appendChild(li);
+        _li = document.createElement("li");
+        _li.setAttribute("id", currentItemID);
+        _li.setAttribute("onClick", "toggleDone(this.id)");
+        _li.appendChild(document.createTextNode(_input.value));
+        _ul.appendChild(_li);
         createDeleteButton(currentItemID);
         list = document.querySelectorAll("li");
-        input.value = "";
-        input.focus();
+        _input.value = "";
+        _input.focus();
         currentItemID++;
         totalItems++;
     } else {
@@ -63,7 +63,7 @@ function createDeleteButton(liID){
     let text = `deleteItem(${liID})`;
     buttonDel.appendChild(document.createTextNode("X"));
     buttonDel.setAttribute("onClick", text);
-    li.appendChild(buttonDel);
+    _li.appendChild(buttonDel);
     buttonDel.addEventListener("click", deleteItem);
 }
 
@@ -89,6 +89,6 @@ function finishList(){
 }
 
 // Input Listeners
-button.addEventListener("click", addItemAfterClick)
+_button.addEventListener("click", addItemAfterClick)
 buttonReady.addEventListener("click", finishList)
 input.addEventListener("keypress", addItemAfterEnter)
