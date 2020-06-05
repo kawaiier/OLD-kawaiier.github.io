@@ -1,7 +1,7 @@
-const _button = document.getElementById("enter");
+const button = document.getElementById("enter");
 const buttonReady = document.getElementById("ready");
-const _input = document.getElementById("userinput");
-const _ul = document.querySelector("ul");
+const input = document.getElementById("userinput");
+const ul = document.querySelector("ul");
 
 const minLength = 23;
 const enterKeyCode = 13;
@@ -11,7 +11,7 @@ const maxItems = 5;
 
 let currentItemID = 0;
 
-let _li;
+let li;
 let list;
 let buttonDel = null;
 
@@ -20,12 +20,12 @@ let editable = true;
 window.onload = startFunction;
 
 function startFunction(){
-    _input.value = "";
-    _input.focus();
+    input.value = "";
+    input.focus();
 }
 
 function inputLength(){
-    return _input.value.length;
+    return input.value.length;
 }
 
 function addItemAfterClick(){
@@ -42,15 +42,15 @@ function addItemAfterEnter(event){
 
 function createItem(){
     if (totalItems < maxItems){
-        _li = document.createElement("li");
-        _li.setAttribute("id", currentItemID);
-        _li.setAttribute("onClick", "toggleDone(this.id)");
-        _li.appendChild(document.createTextNode(_input.value));
-        _ul.appendChild(_li);
+        li = document.createElement("li");
+        li.setAttribute("id", currentItemID);
+        li.setAttribute("onClick", "toggleDone(this.id)");
+        li.appendChild(document.createTextNode(input.value));
+        ul.appendChild(li);
         createDeleteButton(currentItemID);
         list = document.querySelectorAll("li");
-        _input.value = "";
-        _input.focus();
+        input.value = "";
+        input.focus();
         currentItemID++;
         totalItems++;
     } else {
@@ -63,7 +63,7 @@ function createDeleteButton(liID){
     let text = `deleteItem(${liID})`;
     buttonDel.appendChild(document.createTextNode("X"));
     buttonDel.setAttribute("onClick", text);
-    _li.appendChild(buttonDel);
+    li.appendChild(buttonDel);
     buttonDel.addEventListener("click", deleteItem);
 }
 
@@ -89,6 +89,6 @@ function finishList(){
 }
 
 // Input Listeners
-_button.addEventListener("click", addItemAfterClick)
+button.addEventListener("click", addItemAfterClick)
 buttonReady.addEventListener("click", finishList)
-_input.addEventListener("keypress", addItemAfterEnter)
+input.addEventListener("keypress", addItemAfterEnter)
