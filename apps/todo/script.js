@@ -91,4 +91,4 @@ function finishList(){
 // Input Listeners
 _button.addEventListener("click", addItemAfterClick)
 buttonReady.addEventListener("click", finishList)
-input.addEventListener("keypress", addItemAfterEnter)
+_input.addEventListener("keypress", addItemAfterEnter)
