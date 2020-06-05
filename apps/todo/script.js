@@ -1,27 +1,38 @@
-const button = document.getElementById("enter");
-const buttonReady = document.getElementById("ready");
-const input = document.getElementById("userinput");
-const ul = document.querySelector("ul");
+var button = document.getElementById("enter");
+var buttonReady = document.getElementById("ready");
+var input = document.getElementById("userinput");
+var ul = document.querySelector("ul");
+var p = document.getElementById("symbolsLeft");
 
-const minLength = 23;
-const enterKeyCode = 13;
+var minLength = 23;
+var enterKeyCode = 13;
 
-let totalItems = 0;
-const maxItems = 5;
+var totalItems = 0;
+var maxItems = 5;
 
-let currentItemID = 0;
+var currentItemID = 0;
 
-let li;
-let list;
-let buttonDel = null;
+var li;
+var list;
+var buttonDel = null;
 
-let editable = true;
+var editable = true;
 
-window.onload = startFunction;
+window.onload = startFunction();
 
 function startFunction(){
     input.value = "";
     input.focus();
+}
+
+function addSymbolsLeft(){
+    var text = minLength - input.value.length;
+    if (text > 0) {
+        p.textContent = `Осталось ввести не менее ${text} символов`;
+    } else {
+        p.textContent = `Готово! Можно дообавлять задачу`;
+    }
+    // p.appendChild(text.toString());
 }
 
 function inputLength(){
@@ -92,3 +103,4 @@ function finishList(){
 button.addEventListener("click", addItemAfterClick)
 buttonReady.addEventListener("click", finishList)
 input.addEventListener("keypress", addItemAfterEnter)
+input.addEventListener("input", addSymbolsLeft)
