@@ -29,13 +29,13 @@ function inputLength(){
 }
 
 function addItemAfterClick(){
-    if (inputLength() > minLength){
+    if (inputLength() > minLength && editable === true){
         createItem();
     }
 }
 
 function addItemAfterEnter(event){
-    if (inputLength() > minLength && event.keyCode === enterKeyCode && editable){
+    if (inputLength() > minLength && event.keyCode === enterKeyCode && editable === true){
         createItem();
     }
 }
