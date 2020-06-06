@@ -4,7 +4,7 @@ const input = document.getElementById("userinput");
 const ul = document.querySelector("ul");
 const p = document.getElementById("symbolsLeft");
 
-const minLength = 2;
+const minLength = 23;
 const enterKeyCode = 13;
 
 let totalItems = 0;
