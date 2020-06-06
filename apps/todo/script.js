@@ -1,38 +1,42 @@
-var button = document.getElementById("enter");
-var buttonReady = document.getElementById("ready");
-var input = document.getElementById("userinput");
-var ul = document.querySelector("ul");
-var p = document.getElementById("symbolsLeft");
+const button = document.getElementById("enter");
+const buttonReady = document.getElementById("ready");
+const input = document.getElementById("userinput");
+const ul = document.querySelector("ul");
+const p = document.getElementById("symbolsLeft");
 
-var minLength = 23;
-var enterKeyCode = 13;
+const minLength = 2;
+const enterKeyCode = 13;
 
-var totalItems = 0;
-var maxItems = 5;
+let totalItems = 0;
+const maxItems = 5;
 
-var currentItemID = 0;
+let currentItemID = 0;
 
-var li;
-var list;
-var buttonDel = null;
+let li;
+let list;
+let buttonDel = null;
 
-var editable = true;
+let editable = true;
 
 window.onload = startFunction();
 
 function startFunction(){
     input.value = "";
     input.focus();
+    addSymbolsLeft();
 }
 
 function addSymbolsLeft(){
-    var text = minLength - input.value.length;
-    if (text > 0) {
-        p.textContent = `Осталось ввести не менее ${text} символов`;
+    if (editable){
+        let text = minLength - input.value.length;
+        if (text > 0) {
+            p.textContent = `Осталось ввести не менее ${text} символов`;
+        } else {
+            p.textContent = `Отлично, задачу можно добавлять`;
+        }
     } else {
-        p.textContent = `Готово! Можно дообавлять задачу`;
-    }
-    // p.appendChild(text.toString());
+        p.textContent = `Теперь можно приступить к выполнению задач`
+    };
 }
 
 function inputLength(){
@@ -53,29 +57,32 @@ function addItemAfterEnter(event){
 
 function createItem(){
     if (totalItems < maxItems){
-        li = document.createElement("li");
-        li.setAttribute("id", currentItemID);
-        li.setAttribute("onClick", "toggleDone(this.id)");
-        li.appendChild(document.createTextNode(input.value));
-        ul.appendChild(li);
-        createDeleteButton(currentItemID);
-        list = document.querySelectorAll("li");
-        input.value = "";
-        input.focus();
+        createTaskText();
+        createDeleteButton();
         currentItemID++;
         totalItems++;
+        startFunction()
     } else {
         listGotFull();
     }
 }
 
-function createDeleteButton(liID){
+function createTaskText(){
+    li = document.createElement("li");
+    li.setAttribute("id", currentItemID);
+    li.setAttribute("onClick", "toggleDone(this.id)");
+    li.appendChild(document.createTextNode(input.value));
+    ul.appendChild(li);
+    list = document.querySelectorAll("li");
+}
+
+function createDeleteButton(){
+    let text = `deleteItem(${currentItemID})`;
     buttonDel = document.createElement("button");
-    let text = `deleteItem(${liID})`;
     buttonDel.appendChild(document.createTextNode("X"));
     buttonDel.setAttribute("onClick", text);
-    li.appendChild(buttonDel);
     buttonDel.addEventListener("click", deleteItem);
+    li.appendChild(buttonDel);
 }
 
 function deleteItem(id){
@@ -92,11 +99,22 @@ function listGotFull(){
 }
 
 function finishList(){
+    editable = false;
+    deactivateButtons();
+    deactivateInput();
+    addSymbolsLeft();
+}
+
+function deactivateButtons(){
     let btns = document.querySelectorAll("button");
     for (let btn = 0; btn < btns.length; btn++) {
         btns[btn].setAttribute("disabled", "true");
     }
-    editable = false;
+}
+
+function deactivateInput(){
+    input.value = "Молодец";
+    input.disabled = true;
 }
 
 // Input Listeners
