@@ -160,6 +160,10 @@ li button {
         box-shadow: none;
     }
 
+    .rules {
+        padding: 15px;
+    }
+
     ul {
         width: 330px;
     }
