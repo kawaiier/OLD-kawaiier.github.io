@@ -3,14 +3,13 @@
 body {
     margin: auto 0;
     font-family: 'Marmelad', sans-serif;
-    background-color: rgb(239,236,240)
+    background-color: rgb(239,236,240);
     font-size: 20px;
     height: 1vh;
 }
 
 .container {
     margin: 20px;
-    /* margin-top: 10vh; */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -21,7 +20,6 @@ body {
 }
 
 .intro {
-    /* border: 2px black solid; */
     padding: 20px;
 }
 
@@ -37,7 +35,6 @@ h1 {
     text-align: center;
     margin: 5px;
     color: #96A9EE;
-    /* width: 80%; */
 }
 
 .lead {
@@ -54,7 +51,6 @@ h1 {
 }
 .entry {
     padding: 40px;
-    /* border: 2px black solid; */
 }
 
 input {
@@ -76,7 +72,6 @@ ul {
     padding: 20px;
     width: 470px;
     list-style-type: none;
-    /* border: 2px black solid; */
 }
 
 li {
@@ -151,7 +146,7 @@ li button {
     padding: 10px;
 }
 
-@media only screen and (max-width: 660px) {
+@media screen and (max-width: 660px) {
     body {
         width: 100%;
         display: block;
